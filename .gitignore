@@ -28,5 +28,9 @@ Godeps/_*
 Godeps/Readme
 .goenv
 
+# coverage
+coverage.out
+gocov.json
+
 # output
 maya

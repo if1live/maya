@@ -1,7 +1,8 @@
 title: this is title
 subtitle: this is subtitle
 tags: lisp, demo
-article: if1live
+author: if1live
+slug: sample-article
 
 ## write article
 
