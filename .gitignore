@@ -22,3 +22,11 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# godep + goautoenv
+Godeps/_*
+Godeps/Readme
+.goenv
+
+# output
+maya
