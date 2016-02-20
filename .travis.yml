@@ -7,7 +7,7 @@ install:
   - godep restore
   # for test coverage
   - go get github.com/axw/gocov/gocov github.com/mattn/goveralls
-  - go get github.com/golang/tools/cmd/cover
+  - if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
   - export PATH=$PATH:$GOPATH/bin
 
 script:
