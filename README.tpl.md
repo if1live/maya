@@ -48,7 +48,6 @@ If syntax to express metadata exists, we can migrate from pelican to hugo easily
 
 ### Replace code and command line output
 Embedding code into markdown is bothering task. Maya read source and embed it into markdown document.
-
 Embedding command line output into markdown is bothering task. Maya execute command and embed result into makrdown document.
 
 
@@ -96,9 +95,7 @@ subtitle: this-is-subtitle
 ### Embed file
 
 `{{view:file=demo.lisp}}`
-
 `{{view:file=demo.lisp,lang=lisp}}`
-
 `{{view:file=demo.lisp,lang=lisp,start=1,end=2}}`
 `{{view:file=demo.lisp,lang=lisp,start=1,end=2,fmt=blockquote}}`
 
