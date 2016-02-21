@@ -51,7 +51,7 @@ func TestRunCommandViewFile(t *testing.T) {
 				EndLine:   3,
 				Format:    OutputFormatBlockquote,
 			},
-			"> \n> import (",
+			">\n> import (",
 		},
 		{
 			CommandViewFile{
