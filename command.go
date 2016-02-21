@@ -2,12 +2,13 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/op/go-logging"
 )
 
 const (
@@ -69,7 +70,8 @@ type CommandViewFile struct {
 }
 
 func (c *CommandViewFile) Run() string {
-	log.Printf("Command ViewFile: %v", c)
+	log := logging.MustGetLogger("maya")
+	log.Infof("Command ViewFile: %v", c)
 	data, err := ioutil.ReadFile(c.FilePath)
 	if err != nil {
 		panic(err)
@@ -97,7 +99,8 @@ func (c *CommandExecute) SplitCommand() (string, []string) {
 }
 
 func (c *CommandExecute) Run() string {
-	log.Printf("Command execute: %v", c)
+	log := logging.MustGetLogger("maya")
+	log.Infof("Command execute: %v", c)
 	name, args := c.SplitCommand()
 	out, err := exec.Command(name, args...).Output()
 	if err != nil {
@@ -120,7 +123,8 @@ type CommandUnknown struct {
 }
 
 func (c *CommandUnknown) Run() string {
-	log.Printf("Command Unknown: %v", c)
+	log := logging.MustGetLogger("maya")
+	log.Warningf("Command Unknown: %v", c)
 	tokens := []string{
 		"**",
 		"Action=" + c.Action,

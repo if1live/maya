@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/kardianos/osext"
+	"github.com/op/go-logging"
 )
 
 const (
@@ -91,12 +92,18 @@ func NewTemplateLoader() MetadataTemplateLoader {
 		candidates := []string{
 			target.filepath,
 			filepath.Join(dir, target.filepath),
+			filepath.Join(os.Getenv("GOPATH"), "src", "github.com/if1live/maya", target.filepath),
 		}
+		found := false
 		for _, candidate := range candidates {
-			success := loader.Register(target.mode, candidate)
-			if success {
+			if loader.Register(target.mode, candidate) {
+				found = true
 				break
 			}
+		}
+		if found == false {
+			log := logging.MustGetLogger("maya")
+			log.Fatalf("Metadata Template Load Fail [%s] cannot find any candidate", target.mode)
 		}
 	}
 
@@ -113,7 +120,9 @@ func (l *MetadataTemplateLoader) Register(mode, filepath string) bool {
 	l.templates[mode] = template.Must(
 		template.New(mode).Funcs(funcMap).Parse(l.texts[mode]),
 	)
-	log.Printf("Metadata Template Load Success [%s] %s", mode, filepath)
+
+	log := logging.MustGetLogger("maya")
+	log.Infof("Metadata Template Load Success [%s] %s", mode, filepath)
 	return true
 
 }

@@ -3,19 +3,18 @@ package main
 import (
 	"bytes"
 	"io"
-	"log"
-	"os"
 	"regexp"
 	"strings"
+
+	"github.com/op/go-logging"
 )
 
 type Article struct {
 	MetadataText string
 	ContentText  string
 	MetadataMode string
+	loader       MetadataTemplateLoader
 }
-
-var loader = NewTemplateLoader()
 
 func NewArticleFromReader(r io.Reader, mode string) *Article {
 	buf := new(bytes.Buffer)
@@ -28,8 +27,8 @@ func NewArticle(text string, mode string) *Article {
 	contentLines := []string{}
 
 	if mode == "" {
+		log := logging.MustGetLogger("maya")
 		log.Fatal("mode required. use -h")
-		os.Exit(1)
 	}
 
 	lines := strings.Split(text, "\n")
@@ -63,6 +62,7 @@ func NewArticle(text string, mode string) *Article {
 		MetadataText: strings.Join(metadataLines, "\n"),
 		ContentText:  strings.Join(contentLines, "\n"),
 		MetadataMode: mode,
+		loader:       NewTemplateLoader(),
 	}
 }
 
@@ -76,7 +76,7 @@ func (a *Article) Content() *ArticleContent {
 
 func (a *Article) Output(w io.Writer) {
 	metadata := a.Metadata()
-	header := loader.Execute(metadata, a.MetadataMode)
+	header := a.loader.Execute(metadata, a.MetadataMode)
 
 	content := a.Content()
 	body := content.String()
