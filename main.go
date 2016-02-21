@@ -2,38 +2,33 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"io/ioutil"
-	"strings"
+	"log"
+	"os"
 )
 
 var mode string
 var filePath string
 
 func init() {
-	flag.StringVar(&mode, "mode", "pelican-md", "document mode")
-	flag.StringVar(&filePath, "file", "demo.md", "file path")
+	flag.StringVar(&mode, "mode", "", "document mode: pelican/hugo")
+	flag.StringVar(&filePath, "file", "", "file path: xxx.md")
 }
 
 func main() {
 	flag.Parse()
 
-	loader := NewTemplateLoader()
-
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		panic(err)
+	if filePath == "" {
+		log.Fatal("file path required. use -h")
+		os.Exit(1)
 	}
-	text := string(data[:])
 
-	article := NewArticle(text)
-	metadata := article.Metadata()
-	header := loader.Execute(metadata, mode)
+	f, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err.Error())
+		os.Exit(1)
+	}
 
-	content := article.Content()
-	body := content.String()
-
-	output := strings.Join([]string{header, "", body}, "\n")
-	fmt.Println(output)
-
+	article := NewArticleFromReader(f, mode)
+	out := os.Stdout
+	article.Output(out)
 }

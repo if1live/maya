@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	PelicanMarkdown       = "pelican-md"
-	PelicanReStructedText = "pelican-rst"
-	HugoMarkdown          = "hugo-md"
+	ModePelican = "pelican"
+	ModeHugo    = "hugo"
+	ModeEmpty   = "empty"
 )
 
 type ArticleMetadata struct {
@@ -82,9 +82,9 @@ func NewTemplateLoader() MetadataTemplateLoader {
 		mode     string
 		filepath string
 	}{
-		{PelicanMarkdown, "templates/metadata_pelican_md.tpl"},
-		{PelicanReStructedText, "templates/metadata_pelican_rst.tpl"},
-		{HugoMarkdown, "templates/metadata_hugo_md.tpl"},
+		{ModePelican, "templates/metadata_pelican.tpl"},
+		{ModeHugo, "templates/metadata_hugo.tpl"},
+		{ModeEmpty, "templates/metadata_empty.tpl"},
 	}
 	for _, target := range targets {
 		dir, _ := osext.ExecutableFolder()
@@ -157,8 +157,15 @@ func (l *MetadataTemplateLoader) Execute(metadata *ArticleMetadata, mode string)
 	var b bytes.Buffer
 	t.Execute(&b, metadata)
 	text := string(b.Bytes())
-	text = strings.Trim(text, "\n")
-	return text
+	lines := strings.Split(text, "\n")
+
+	result := []string{}
+	for _, line := range lines {
+		if len(strings.Trim(line, " ")) > 0 {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
 }
 
 func (l *MetadataTemplateLoader) readFile(filepath string) (string, error) {

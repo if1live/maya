@@ -39,7 +39,7 @@ func TestNewArticle(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		article := NewArticle(c.text)
+		article := NewArticle(c.text, ModePelican)
 		assert.Equal(t, c.metadataText, article.MetadataText)
 		assert.Equal(t, c.contentText, article.ContentText)
 	}

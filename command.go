@@ -49,7 +49,7 @@ func (f *OutputFormatter) Run(text string, args ...string) string {
 		for i, line := range lines {
 			isLastLine := (i == len(lines)-1)
 			if !isLastLine || (isLastLine && len(line) != 0) {
-				lines[i] = "> " + line
+				lines[i] = strings.TrimRight("> "+line, " ")
 			}
 		}
 		return strings.Join(lines, "\n")
@@ -86,8 +86,9 @@ func (c *CommandViewFile) Run() string {
 }
 
 type CommandExecute struct {
-	Cmd    string
-	Format string
+	Cmd       string
+	AttachCmd bool
+	Format    string
 }
 
 func (c *CommandExecute) SplitCommand() (string, []string) {
@@ -102,7 +103,13 @@ func (c *CommandExecute) Run() string {
 	if err != nil {
 		panic(err)
 	}
-	text := string(out[:])
+
+	elems := []string{}
+	if c.AttachCmd {
+		elems = append(elems, "$ "+c.Cmd)
+	}
+	elems = append(elems, string(out[:]))
+	text := strings.Join(elems, "\n")
 	formatter := OutputFormatter{c.Format}
 	return formatter.Run(text)
 }
@@ -155,9 +162,14 @@ func NewCommand(action string, params string) Command {
 			Format:    format,
 		}
 	case "execute":
+		attachCmd := false
+		if len(values.Get("attach_cmd")) > 0 {
+			attachCmd = true
+		}
 		return &CommandExecute{
-			Cmd:    values.Get("cmd"),
-			Format: format,
+			Cmd:       values.Get("cmd"),
+			AttachCmd: attachCmd,
+			Format:    format,
 		}
 	default:
 		return &CommandUnknown{

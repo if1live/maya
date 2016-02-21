@@ -1,6 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"io"
+	"log"
+	"os"
 	"regexp"
 	"strings"
 )
@@ -8,11 +12,26 @@ import (
 type Article struct {
 	MetadataText string
 	ContentText  string
+	MetadataMode string
 }
 
-func NewArticle(text string) *Article {
+var loader = NewTemplateLoader()
+
+func NewArticleFromReader(r io.Reader, mode string) *Article {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r)
+	return NewArticle(buf.String(), mode)
+}
+
+func NewArticle(text string, mode string) *Article {
 	metadataLines := []string{}
 	contentLines := []string{}
+
+	if mode == "" {
+		log.Fatal("mode required. use -h")
+		os.Exit(1)
+	}
+
 	lines := strings.Split(text, "\n")
 
 	const (
@@ -43,6 +62,7 @@ func NewArticle(text string) *Article {
 	return &Article{
 		MetadataText: strings.Join(metadataLines, "\n"),
 		ContentText:  strings.Join(contentLines, "\n"),
+		MetadataMode: mode,
 	}
 }
 
@@ -52,4 +72,16 @@ func (a *Article) Metadata() *ArticleMetadata {
 
 func (a *Article) Content() *ArticleContent {
 	return NewContent(a.ContentText)
+}
+
+func (a *Article) Output(w io.Writer) {
+	metadata := a.Metadata()
+	header := loader.Execute(metadata, a.MetadataMode)
+
+	content := a.Content()
+	body := content.String()
+
+	output := strings.Join([]string{header, "", body}, "\n")
+	output = strings.TrimLeft(output, "\n")
+	w.Write([]byte(output))
 }

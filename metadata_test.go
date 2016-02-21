@@ -59,7 +59,7 @@ slug: slug-1
 		expected string
 	}{
 		{
-			loader.Execute(metadata, PelicanMarkdown),
+			loader.Execute(metadata, ModePelican),
 			strings.Trim(`
 Title: 제목
 Subtitle: subtitle-1
@@ -69,14 +69,15 @@ Date: 2016-02-20
 `, "\n"),
 		},
 		{
-			loader.Execute(metadata, PelicanReStructedText),
+			loader.Execute(metadata, ModeHugo),
 			strings.Trim(`
-제목
-====
-:subtitle: subtitle-1
-:slug: slug-1
-:tags: foo, bar
-:date: 2016-02-20
++++
+title = "제목"
+subtitle = "subtitle-1"
+slug = "slug-1"
+tags = ["foo", "bar"]
+date = "2016-02-20"
++++
 `, "\n"),
 		},
 	}

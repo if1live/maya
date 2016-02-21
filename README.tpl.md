@@ -3,8 +3,7 @@
 [![Build Status](https://travis-ci.org/if1live/maya.svg?branch=master)](https://travis-ci.org/if1live/maya)
 [![Coverage Status](https://coveralls.io/repos/github/if1live/maya/badge.svg?branch=master)](https://coveralls.io/github/if1live/maya?branch=master)
 
-Document migration tool for static site generator.
-Generate Markdown from Markdown-like syntax.
+Markdown preprocessor for static site generator.
 
 ## Feature
 ### Generate markdown file from markdown template file.
@@ -72,10 +71,10 @@ demo.lisp is used in ``demo.md``.
 ## Step 2. Build document
 
 ```bash
-maya -mode=pelican-md -file=demo.md
+maya -mode=pelican -file=demo.md
 ```
 
-{{execute:cmd=maya -mode=pelican-md -file=demo.md,fmt=blockquote}}
+{{execute:cmd=./maya -mode=pelican -file=demo.md,fmt=blockquote}}
 
 Output is markdown syntax, but it is hard to embed markdown document into another document. so, I use blockquote instead of code syntax.
 
@@ -94,10 +93,10 @@ subtitle: this-is-subtitle
 
 ### Embed file
 
-`{{view:file=demo.lisp}}`
-`{{view:file=demo.lisp,lang=lisp}}`
-`{{view:file=demo.lisp,lang=lisp,start=1,end=2}}`
-`{{view:file=demo.lisp,lang=lisp,start=1,end=2,fmt=blockquote}}`
+* `{{view:file=demo.lisp}}`
+* `{{view:file=demo.lisp,lang=lisp}}`
+* `{{view:file=demo.lisp,lang=lisp,start=1,end=2}}`
+* `{{view:file=demo.lisp,lang=lisp,start=1,end=2,fmt=blockquote}}`
 
 * file: required, file to attach
 * lang: optional, language. if not exist, use extension
@@ -107,6 +106,10 @@ subtitle: this-is-subtitle
 
 ### Embed command output
 
-`{{execute:cmd=maya -mode=pelican-md -file=demo.md}}`
+* `{{execute:cmd=maya -mode=pelican -file=demo.md}}`
+* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote}}`
+* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote,attach_cmd=t}}`
 
-* cmd: command to execute
+* cmd: required, command to execute
+* fmt: optional, blockquote/code/bold
+* attach_cmd: optional, attach cmd or not (if value exist, attach cmd)

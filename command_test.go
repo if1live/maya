@@ -13,12 +13,16 @@ func TestRunCommandExecute(t *testing.T) {
 		output string
 	}{
 		{
-			CommandExecute{"echo hello", OutputFormatCode},
+			CommandExecute{"echo hello", false, OutputFormatCode},
 			"```\nhello\n```",
 		},
 		{
-			CommandExecute{"echo hello", OutputFormatBlockquote},
+			CommandExecute{"echo hello", false, OutputFormatBlockquote},
 			"> hello\n",
+		},
+		{
+			CommandExecute{"echo hello", true, OutputFormatBlockquote},
+			"> $ echo hello\n> hello\n",
 		},
 	}
 	for _, c := range cases {
@@ -99,11 +103,15 @@ func TestNewCommand(t *testing.T) {
 		},
 		{
 			NewCommand("execute", "cmd=echo hello"),
-			&CommandExecute{"echo hello", OutputFormatCode},
+			&CommandExecute{"echo hello", false, OutputFormatCode},
 		},
 		{
 			NewCommand("execute", "cmd=echo hello,fmt=blockquote"),
-			&CommandExecute{"echo hello", OutputFormatBlockquote},
+			&CommandExecute{"echo hello", false, OutputFormatBlockquote},
+		},
+		{
+			NewCommand("execute", "cmd=echo hello,fmt=blockquote,attach_cmd=t"),
+			&CommandExecute{"echo hello", true, OutputFormatBlockquote},
 		},
 		{
 			NewCommand("hello", "world"),
