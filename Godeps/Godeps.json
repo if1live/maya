@@ -11,6 +11,11 @@
 			"Rev": "29ae4ffbc9a6fe9fb2bc5029050ce6996ea1d3bc"
 		},
 		{
+			"ImportPath": "github.com/op/go-logging",
+			"Comment": "v1-5-gd2e44aa",
+			"Rev": "d2e44aa77b7195c0ef782189985dd8550e22e4de"
+		},
+		{
 			"ImportPath": "github.com/pmezard/go-difflib/difflib",
 			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
 		},
