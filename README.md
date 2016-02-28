@@ -90,7 +90,6 @@ cmd=clisp demo.lisp
 cmd=clisp demo.lisp
 format=blockquote
 ~~~
-
 ```
 
 **demo.lisp**
@@ -99,7 +98,6 @@ demo.lisp is used in ``demo.md``.
 ```lisp
 (defun function... () (princ "and ..."))
 (function...)
-
 ```
 
 ## Step 2. Build document
@@ -120,7 +118,6 @@ slug: sample-article
 ```lisp
 (defun function... () (princ "and ..."))
 (function...)
-
 ```
 
 ```lisp
@@ -129,13 +126,11 @@ slug: sample-article
 
 ```
 and ...
-
 ```
 
 > and ...
 >
 >
-
 ```
 
 Output is markdown syntax, but it is hard to embed markdown document into another document. so, I use blockquote instead of code syntax.

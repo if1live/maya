@@ -39,6 +39,10 @@ func (f *OutputFormatter) formatCode(lines []string, lang string) string {
 	headLine := "```" + f.convertLanguage(lang)
 	tailLine := "```"
 
+	if lines[len(lines)-1] == "" {
+		lines = lines[:len(lines)-1]
+	}
+
 	contents := make([]string, len(lines)+2)
 	contents[0] = headLine
 	for i, line := range lines {

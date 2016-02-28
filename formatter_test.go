@@ -22,6 +22,18 @@ func TestFormat(t *testing.T) {
 		},
 		{
 			OutputFormatCode,
+			[]string{"hello", "world", ""},
+			[]string{},
+			"```\nhello\nworld\n```",
+		},
+		{
+			OutputFormatCode,
+			[]string{"hello", "", "world"},
+			[]string{},
+			"```\nhello\n\nworld\n```",
+		},
+		{
+			OutputFormatCode,
 			[]string{"hello", "world"},
 			[]string{"python"},
 			"```python\nhello\nworld\n```",
