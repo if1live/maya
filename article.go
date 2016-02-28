@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/op/go-logging"
@@ -34,22 +33,31 @@ func NewArticle(text string, mode string) *Article {
 	lines := strings.Split(text, "\n")
 
 	const (
+		LineParseStateInit     = 0
 		LineParseStateMetadata = 1
 		LineParseStateContent  = 2
 	)
 
-	state := LineParseStateMetadata
-	re := regexp.MustCompile(`^(.+):(.*)$`)
+	// 파싱을 간단하게 처리하려고 hugo 방식을 채택
+	// +++
+	// metadatas
+	// +++
+	// content
+
+	state := LineParseStateInit
 	for _, line := range lines {
 		switch state {
-		case LineParseStateMetadata:
-			if len(strings.Trim(line, " \t")) == 0 {
-				continue
-			}
-			m := re.FindString(line)
-			if m == "" {
-				state = LineParseStateContent
+		case LineParseStateInit:
+			if strings.Trim(line, " ") == "+++" {
+				state = LineParseStateMetadata
+				metadataLines = []string{}
+			} else {
 				contentLines = append(contentLines, line)
+			}
+		case LineParseStateMetadata:
+			if strings.Trim(line, " ") == "+++" {
+				state = LineParseStateContent
+				contentLines = []string{}
 			} else {
 				metadataLines = append(metadataLines, line)
 			}

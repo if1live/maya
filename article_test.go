@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,29 +13,44 @@ func TestNewArticle(t *testing.T) {
 		metadataText string
 		contentText  string
 	}{
-		// metadata + empty line + content
+		// basic
 		{
-			"title: hello\n\nthis is content",
-			"title: hello",
-			"this is content",
-		},
-		// metadata + content
-		{
-			"title: hello\nthis is content",
+			strings.Join([]string{
+				"+++",
+				"title: hello",
+				"+++",
+				"this is content",
+			}, "\n"),
 			"title: hello",
 			"this is content",
 		},
 		// metadata
 		{
-			"title: hello\n",
+			strings.Join([]string{
+				"+++",
+				"title: hello",
+				"+++",
+				"",
+			}, "\n"),
 			"title: hello",
 			"",
 		},
-		// content
+		// content only
 		{
-			"this is content\n",
+			strings.Join([]string{
+				"this is content",
+			}, "\n"),
 			"",
-			"this is content\n",
+			"this is content",
+		},
+		{
+			strings.Join([]string{
+				"+++",
+				"+++",
+				"this is content",
+			}, "\n"),
+			"",
+			"this is content",
 		},
 	}
 
