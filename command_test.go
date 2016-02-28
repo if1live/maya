@@ -73,8 +73,8 @@ func TestRawOutputCommandUnknown(t *testing.T) {
 		output []string
 	}{
 		{
-			CommandUnknown{"foo", "bar"},
-			[]string{"Action=foo", "Params=bar"},
+			CommandUnknown{"foo"},
+			[]string{"Action=foo"},
 		},
 	}
 	for _, c := range cases {
@@ -88,32 +88,49 @@ func TestNewCommand(t *testing.T) {
 		expected Command
 	}{
 		{
-			NewCommand("view", "file=hello.txt"),
+			NewCommand("view", map[string]string{"file": "hello.txt"}),
 			&CommandView{"hello.txt", 0, 0, "txt", OutputFormatCode},
 		},
 		{
-			NewCommand("view", "file=foo.txt,start=1,end=10,fmt=blockquote"),
+			NewCommand("view", map[string]string{
+				"file":  "foo.txt",
+				"start": "1",
+				"end":   "10",
+				"fmt":   "blockquote",
+			}),
 			&CommandView{"foo.txt", 1, 10, "txt", OutputFormatBlockquote},
 		},
 		{
-			NewCommand("view", "file=hello.txt,lang=lisp"),
+			NewCommand("view", map[string]string{
+				"file": "hello.txt",
+				"lang": "lisp",
+			}),
 			&CommandView{"hello.txt", 0, 0, "lisp", OutputFormatCode},
 		},
 		{
-			NewCommand("execute", "cmd=echo hello"),
+			NewCommand("execute", map[string]string{
+				"cmd": "echo hello",
+			}),
 			&CommandExecute{"echo hello", false, OutputFormatCode},
 		},
 		{
-			NewCommand("execute", "cmd=echo hello,fmt=blockquote"),
+			NewCommand("execute", map[string]string{
+				"cmd": "echo hello",
+				"fmt": "blockquote",
+			}),
 			&CommandExecute{"echo hello", false, OutputFormatBlockquote},
 		},
 		{
-			NewCommand("execute", "cmd=echo hello,fmt=blockquote,attach_cmd=t"),
+			NewCommand("execute", map[string]string{
+				"cmd":        "echo hello",
+				"fmt":        "blockquote",
+				"attach_cmd": "t",
+			}),
 			&CommandExecute{"echo hello", true, OutputFormatBlockquote},
 		},
 		{
-			NewCommand("hello", "world"),
-			&CommandUnknown{"hello", "world"},
+			NewCommand("hello", map[string]string{"key": "value"}),
+			&CommandUnknown{"hello"},
 		},
 	}
 	for _, c := range cases {

@@ -44,6 +44,16 @@ func NewArticle(text string, mode string) *Article {
 	// +++
 	// content
 
+	if lines[0] != "+++" {
+		// no metadata
+		return &Article{
+			MetadataText: "",
+			ContentText:  text,
+			MetadataMode: mode,
+			loader:       NewTemplateLoader(),
+		}
+	}
+
 	state := LineParseStateInit
 	for _, line := range lines {
 		switch state {

@@ -61,7 +61,7 @@ go install github.com/if1live/maya
 
 **demo.md**
 
-```md
+```
 title: this is title
 subtitle: this is subtitle
 tags: lisp, demo
@@ -70,21 +70,36 @@ slug: sample-article
 
 ## write article
 
-{{view:file=demo.lisp,lang=lisp}}
+~~~maya:view
+file=demo.lisp
+lang=lisp
+~~~
 
-{{view:file=demo.lisp,start=0,end=1,lang=lisp}}
+~~~maya:view
+file=demo.lisp
+start=0
+end=1
+lang=lisp
+~~~
 
-{{execute:cmd=clisp demo.lisp}}
+~~~maya:execute
+cmd=clisp demo.lisp
+~~~
 
-{{execute:cmd=clisp demo.lisp,fmt=blockquote}}
+~~~maya:execute
+cmd=clisp demo.lisp
+fmt=blockquote
+~~~
+
 ```
 
 **demo.lisp**
 demo.lisp is used in ``demo.md``.
 
-```lisp
+```
 (defun function... () (princ "and ..."))
 (function...)
+
 ```
 
 ## Step 2. Build document
@@ -93,30 +108,35 @@ demo.lisp is used in ``demo.md``.
 maya -mode=pelican -file=demo.md
 ```
 
-> Title: this is title
-> Subtitle: this is subtitle
-> Slug: sample-article
-> Tags: lisp, demo
-> Author: if1live
->
-> ## write article
->
-> ```lisp
-> (defun function... () (princ "and ..."))
-> (function...)
-> ```
->
-> ```lisp
-> (defun function... () (princ "and ..."))
-> ```
->
-> ```
+```
+title: this is title
+subtitle: this is subtitle
+tags: lisp, demo
+author: if1live
+slug: sample-article
+
+## write article
+
+```
+(defun function... () (princ "and ..."))
+(function...)
+
+```
+
+```
+(defun function... () (princ "and ..."))
+```
+
+```
+and ...
+
+```
+
 > and ...
-> ```
 >
-> > and ...
 >
 
+```
 
 Output is markdown syntax, but it is hard to embed markdown document into another document. so, I use blockquote instead of code syntax.
 
@@ -128,17 +148,26 @@ Output is markdown syntax, but it is hard to embed markdown document into anothe
 ## Syntax
 ### Metadata
 ```
++++
 title: this-is-title
 subtitle: this-is-subtitle
 <key>: <value>
++++
 ```
 
 ### Embed file
 
-* `{{view:file=demo.lisp}}`
-* `{{view:file=demo.lisp,lang=lisp}}`
-* `{{view:file=demo.lisp,lang=lisp,start=1,end=2}}`
-* `{{view:file=demo.lisp,lang=lisp,start=1,end=2,fmt=blockquote}}`
+ignore first backslash.
+
+```
+\~~~maya:view
+file=demo.lisp
+lang=lisp
+start=1
+end=2
+fmt=blockquote
+~~~
+```
 
 * file: required, file to attach
 * lang: optional, language. if not exist, use extension
@@ -148,9 +177,15 @@ subtitle: this-is-subtitle
 
 ### Embed command output
 
-* `{{execute:cmd=maya -mode=pelican -file=demo.md}}`
-* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote}}`
-* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote,attach_cmd=t}}`
+ignore first backslash.
+
+```
+\~~~maya:execute
+cmd=maya -mode=pelican -file=demo.md
+fmt=blockquote
+attach_cmd=true
+~~~
+```
 
 * cmd: required, command to execute
 * fmt: optional, blockquote/code/bold

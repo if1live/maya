@@ -2,7 +2,6 @@ package main
 
 import (
 	"io/ioutil"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -20,7 +19,7 @@ const (
 )
 
 type Command interface {
-	Run() string
+	Formatter() *OutputFormatter
 	RawOutput() []string
 }
 
@@ -52,10 +51,8 @@ func (c *CommandView) RawOutput() []string {
 	return lines[c.StartLine:c.EndLine]
 }
 
-func (c *CommandView) Run() string {
-	text := strings.Join(c.RawOutput(), "\n")
-	formatter := OutputFormatter{c.Format}
-	return formatter.Run(text, c.Language)
+func (c *CommandView) Formatter() *OutputFormatter {
+	return &OutputFormatter{c.Format}
 }
 
 type CommandExecute struct {
@@ -98,15 +95,12 @@ func (c *CommandExecute) RawOutput() []string {
 	return elems
 }
 
-func (c *CommandExecute) Run() string {
-	text := strings.Join(c.RawOutput(), "\n")
-	formatter := OutputFormatter{c.Format}
-	return formatter.Run(text)
+func (c *CommandExecute) Formatter() *OutputFormatter {
+	return &OutputFormatter{c.Format}
 }
 
 type CommandUnknown struct {
 	Action string
-	Params string
 }
 
 func (c *CommandUnknown) RawOutput() []string {
@@ -114,35 +108,27 @@ func (c *CommandUnknown) RawOutput() []string {
 	log.Warningf("Command Unknown: %v", c)
 	tokens := []string{
 		"Action=" + c.Action,
-		"Params=" + c.Params,
 	}
 	return tokens
 }
-func (c *CommandUnknown) Run() string {
-	text := strings.Join(c.RawOutput(), "\n")
-	formatter := OutputFormatter{OutputFormatBlockquote}
-	return formatter.Run(text)
+func (c *CommandUnknown) Formatter() *OutputFormatter {
+	return &OutputFormatter{OutputFormatBlockquote}
 }
 
-func NewCommand(action string, params string) Command {
+func NewCommand(action string, params map[string]string) Command {
 	// 파싱하기 귀찮은 관계로 url query string에 묻어가자
 	// 나중에 개선하기
-	values, err := url.ParseQuery(strings.Replace(params, ",", "&", -1))
-	if err != nil {
-		panic(err)
-	}
-
-	format := values.Get("fmt")
+	format := params["fmt"]
 	if format == "" {
 		format = OutputFormatCode
 	}
 
 	switch action {
 	case "view":
-		startLine, _ := strconv.Atoi(values.Get("start"))
-		endLine, _ := strconv.Atoi(values.Get("end"))
-		language := values.Get("lang")
-		filePath := values.Get("file")
+		startLine, _ := strconv.Atoi(params["start"])
+		endLine, _ := strconv.Atoi(params["end"])
+		language := params["lang"]
+		filePath := params["file"]
 		if language == "" {
 			language = strings.Replace(filepath.Ext(filePath), ".", "", -1)
 		}
@@ -156,18 +142,17 @@ func NewCommand(action string, params string) Command {
 		}
 	case "execute":
 		attachCmd := false
-		if len(values.Get("attach_cmd")) > 0 {
+		if len(params["attach_cmd"]) > 0 {
 			attachCmd = true
 		}
 		return &CommandExecute{
-			Cmd:       values.Get("cmd"),
+			Cmd:       params["cmd"],
 			AttachCmd: attachCmd,
 			Format:    format,
 		}
 	default:
 		return &CommandUnknown{
 			Action: action,
-			Params: params,
 		}
 	}
 }

@@ -61,12 +61,17 @@ go install github.com/if1live/maya
 
 **demo.md**
 
-{{view:file=demo.md,lang=}}
+~~~maya:view
+file=demo.md
+~~~
 
 **demo.lisp**
 demo.lisp is used in ``demo.md``.
 
-{{view:file=demo.lisp,lang=lisp}}
+~~~maya:view
+file=demo.lisp
+lang=lisp
+~~~
 
 ## Step 2. Build document
 
@@ -74,7 +79,10 @@ demo.lisp is used in ``demo.md``.
 maya -mode=pelican -file=demo.md
 ```
 
-{{execute:cmd=./maya -mode=pelican -file=demo.md,fmt=blockquote}}
+~~~maya:execute
+cmd=./maya -mode=pelican -file=demo.md
+fmt=code
+~~~
 
 Output is markdown syntax, but it is hard to embed markdown document into another document. so, I use blockquote instead of code syntax.
 
@@ -86,17 +94,26 @@ Output is markdown syntax, but it is hard to embed markdown document into anothe
 ## Syntax
 ### Metadata
 ```
++++
 title: this-is-title
 subtitle: this-is-subtitle
 <key>: <value>
++++
 ```
 
 ### Embed file
 
-* `{{view:file=demo.lisp}}`
-* `{{view:file=demo.lisp,lang=lisp}}`
-* `{{view:file=demo.lisp,lang=lisp,start=1,end=2}}`
-* `{{view:file=demo.lisp,lang=lisp,start=1,end=2,fmt=blockquote}}`
+ignore first backslash.
+
+```
+\~~~maya:view
+file=demo.lisp
+lang=lisp
+start=1
+end=2
+fmt=blockquote
+~~~
+```
 
 * file: required, file to attach
 * lang: optional, language. if not exist, use extension
@@ -106,9 +123,15 @@ subtitle: this-is-subtitle
 
 ### Embed command output
 
-* `{{execute:cmd=maya -mode=pelican -file=demo.md}}`
-* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote}}`
-* `{{execute:cmd=maya -mode=pelican -file=demo.md,fmt=blockquote,attach_cmd=t}}`
+ignore first backslash.
+
+```
+\~~~maya:execute
+cmd=maya -mode=pelican -file=demo.md
+fmt=blockquote
+attach_cmd=true
+~~~
+```
 
 * cmd: required, command to execute
 * fmt: optional, blockquote/code/bold
