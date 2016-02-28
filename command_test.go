@@ -7,6 +7,56 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestIntVal(t *testing.T) {
+	cases := []struct {
+		params     map[string]string
+		key        string
+		defaultVal int
+		expected   int
+	}{
+		{map[string]string{"key": "123"}, "key", 1, 123},
+		{map[string]string{"key": "123"}, "not-exist", 1, 1},
+		{map[string]string{"key": "invalid"}, "key", 1, 1},
+	}
+	for _, c := range cases {
+		ca := CommandArguments{c.params}
+		assert.Equal(t, c.expected, ca.IntVal(c.key, c.defaultVal))
+	}
+}
+
+func TestStringVal(t *testing.T) {
+	cases := []struct {
+		params     map[string]string
+		key        string
+		defaultVal string
+		expected   string
+	}{
+		{map[string]string{"key": "123"}, "key", "1", "123"},
+		{map[string]string{"key": "123"}, "not-exist", "default", "default"},
+	}
+	for _, c := range cases {
+		ca := CommandArguments{c.params}
+		assert.Equal(t, c.expected, ca.StringVal(c.key, c.defaultVal))
+	}
+}
+
+func TestBoolVal(t *testing.T) {
+	cases := []struct {
+		params     map[string]string
+		key        string
+		defaultVal bool
+		expected   bool
+	}{
+		{map[string]string{"key": "123"}, "key", true, true},
+		{map[string]string{"key": "123"}, "not-exist", true, true},
+		{map[string]string{"key": "false"}, "key", true, false},
+	}
+	for _, c := range cases {
+		ca := CommandArguments{c.params}
+		assert.Equal(t, c.expected, ca.BoolVal(c.key, c.defaultVal))
+	}
+}
+
 func TestRawOutpoutCommandExecute(t *testing.T) {
 	cases := []struct {
 		cmd    CommandExecute
@@ -88,48 +138,48 @@ func TestNewCommand(t *testing.T) {
 		expected Command
 	}{
 		{
-			NewCommand("view", map[string]string{"file": "hello.txt"}),
+			NewCommand("view", &CommandArguments{map[string]string{"file": "hello.txt"}}),
 			&CommandView{"hello.txt", 0, 0, "txt", OutputFormatCode},
 		},
 		{
-			NewCommand("view", map[string]string{
-				"file":  "foo.txt",
-				"start": "1",
-				"end":   "10",
-				"fmt":   "blockquote",
-			}),
+			NewCommand("view", &CommandArguments{map[string]string{
+				"file":       "foo.txt",
+				"start_line": "1",
+				"end_line":   "10",
+				"format":     "blockquote",
+			}}),
 			&CommandView{"foo.txt", 1, 10, "txt", OutputFormatBlockquote},
 		},
 		{
-			NewCommand("view", map[string]string{
+			NewCommand("view", &CommandArguments{map[string]string{
 				"file": "hello.txt",
 				"lang": "lisp",
-			}),
+			}}),
 			&CommandView{"hello.txt", 0, 0, "lisp", OutputFormatCode},
 		},
 		{
-			NewCommand("execute", map[string]string{
+			NewCommand("execute", &CommandArguments{map[string]string{
 				"cmd": "echo hello",
-			}),
+			}}),
 			&CommandExecute{"echo hello", false, OutputFormatCode},
 		},
 		{
-			NewCommand("execute", map[string]string{
-				"cmd": "echo hello",
-				"fmt": "blockquote",
-			}),
+			NewCommand("execute", &CommandArguments{map[string]string{
+				"cmd":    "echo hello",
+				"format": "blockquote",
+			}}),
 			&CommandExecute{"echo hello", false, OutputFormatBlockquote},
 		},
 		{
-			NewCommand("execute", map[string]string{
+			NewCommand("execute", &CommandArguments{map[string]string{
 				"cmd":        "echo hello",
-				"fmt":        "blockquote",
+				"format":     "blockquote",
 				"attach_cmd": "t",
-			}),
+			}}),
 			&CommandExecute{"echo hello", true, OutputFormatBlockquote},
 		},
 		{
-			NewCommand("hello", map[string]string{"key": "value"}),
+			NewCommand("hello", &CommandArguments{map[string]string{"key": "value"}}),
 			&CommandUnknown{"hello"},
 		},
 	}

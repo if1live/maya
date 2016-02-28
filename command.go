@@ -24,7 +24,35 @@ type Command interface {
 }
 
 type CommandArguments struct {
-	Args map[string]string
+	params map[string]string
+}
+
+func (ca *CommandArguments) IntVal(key string, defaultVal int) int {
+	val, err := strconv.Atoi(ca.params[key])
+	if err != nil {
+		return defaultVal
+	}
+	return val
+}
+
+func (ca *CommandArguments) StringVal(key string, defaultVal string) string {
+	if val, ok := ca.params[key]; ok {
+		return val
+	} else {
+		return defaultVal
+	}
+}
+
+func (ca *CommandArguments) BoolVal(key string, defaultVal bool) bool {
+	if val, ok := ca.params[key]; ok {
+		if val == "false" || val == "f" {
+			return false
+		} else {
+			return true
+		}
+	} else {
+		return defaultVal
+	}
 }
 
 type CommandView struct {
@@ -115,40 +143,25 @@ func (c *CommandUnknown) Formatter() *OutputFormatter {
 	return &OutputFormatter{OutputFormatBlockquote}
 }
 
-func NewCommand(action string, params map[string]string) Command {
-	// 파싱하기 귀찮은 관계로 url query string에 묻어가자
-	// 나중에 개선하기
-	format := params["fmt"]
-	if format == "" {
-		format = OutputFormatCode
-	}
-
+func NewCommand(action string, args *CommandArguments) Command {
 	switch action {
 	case "view":
-		startLine, _ := strconv.Atoi(params["start"])
-		endLine, _ := strconv.Atoi(params["end"])
-		language := params["lang"]
-		filePath := params["file"]
-		if language == "" {
-			language = strings.Replace(filepath.Ext(filePath), ".", "", -1)
-		}
+		filePath := args.StringVal("file", "")
+		defaultLang := strings.Replace(filepath.Ext(filePath), ".", "", -1)
+		language := args.StringVal("lang", defaultLang)
 
 		return &CommandView{
 			FilePath:  filePath,
-			StartLine: startLine,
-			EndLine:   endLine,
+			StartLine: args.IntVal("start_line", 0),
+			EndLine:   args.IntVal("end_line", 0),
 			Language:  language,
-			Format:    format,
+			Format:    args.StringVal("format", OutputFormatCode),
 		}
 	case "execute":
-		attachCmd := false
-		if len(params["attach_cmd"]) > 0 {
-			attachCmd = true
-		}
 		return &CommandExecute{
-			Cmd:       params["cmd"],
-			AttachCmd: attachCmd,
-			Format:    format,
+			Cmd:       args.StringVal("cmd", "echo empty"),
+			AttachCmd: args.BoolVal("attach_cmd", false),
+			Format:    args.StringVal("format", OutputFormatCode),
 		}
 	default:
 		return &CommandUnknown{

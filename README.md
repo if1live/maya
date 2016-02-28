@@ -77,8 +77,8 @@ lang=lisp
 
 ~~~maya:view
 file=demo.lisp
-start=0
-end=1
+start_line=0
+end_line=1
 lang=lisp
 ~~~
 
@@ -88,7 +88,7 @@ cmd=clisp demo.lisp
 
 ~~~maya:execute
 cmd=clisp demo.lisp
-fmt=blockquote
+format=blockquote
 ~~~
 
 ```
@@ -163,17 +163,17 @@ ignore first backslash.
 \~~~maya:view
 file=demo.lisp
 lang=lisp
-start=1
-end=2
-fmt=blockquote
+start_line=1
+end_end=2
+format=blockquote
 ~~~
 ```
 
 * file: required, file to attach
 * lang: optional, language. if not exist, use extension
-* start: optional, starting line to begin reading include file
-* end: optional, last line from include file to display
-* fmt: optional, blockquote/code/bold
+* start_line: optional, starting line to begin reading include file
+* end_line: optional, last line from include file to display
+* format: optional, blockquote/code/bold
 
 ### Embed command output
 
@@ -182,11 +182,11 @@ ignore first backslash.
 ```
 \~~~maya:execute
 cmd=maya -mode=pelican -file=demo.md
-fmt=blockquote
+format=blockquote
 attach_cmd=true
 ~~~
 ```
 
 * cmd: required, command to execute
-* fmt: optional, blockquote/code/bold
+* format: optional, blockquote/code/bold
 * attach_cmd: optional, attach cmd or not (if value exist, attach cmd)

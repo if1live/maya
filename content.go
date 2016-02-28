@@ -30,7 +30,7 @@ func (cb *ContentBlock) Lines() []string {
 		key, value := m[1], m[2]
 		params[key] = value
 	}
-	cmd := NewCommand(cb.command, params)
+	cmd := NewCommand(cb.command, &CommandArguments{params})
 	formatter := cmd.Formatter()
 	return []string{formatter.Format(cmd.RawOutput())}
 }

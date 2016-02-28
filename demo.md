@@ -13,8 +13,8 @@ lang=lisp
 
 ~~~maya:view
 file=demo.lisp
-start=0
-end=1
+start_line=0
+end_line=1
 lang=lisp
 ~~~
 
@@ -24,5 +24,5 @@ cmd=clisp demo.lisp
 
 ~~~maya:execute
 cmd=clisp demo.lisp
-fmt=blockquote
+format=blockquote
 ~~~

@@ -81,7 +81,7 @@ maya -mode=pelican -file=demo.md
 
 ~~~maya:execute
 cmd=./maya -mode=pelican -file=demo.md
-fmt=code
+format=code
 ~~~
 
 Output is markdown syntax, but it is hard to embed markdown document into another document. so, I use blockquote instead of code syntax.
@@ -109,17 +109,17 @@ ignore first backslash.
 \~~~maya:view
 file=demo.lisp
 lang=lisp
-start=1
-end=2
-fmt=blockquote
+start_line=1
+end_end=2
+format=blockquote
 ~~~
 ```
 
 * file: required, file to attach
 * lang: optional, language. if not exist, use extension
-* start: optional, starting line to begin reading include file
-* end: optional, last line from include file to display
-* fmt: optional, blockquote/code/bold
+* start_line: optional, starting line to begin reading include file
+* end_line: optional, last line from include file to display
+* format: optional, blockquote/code/bold
 
 ### Embed command output
 
@@ -128,11 +128,11 @@ ignore first backslash.
 ```
 \~~~maya:execute
 cmd=maya -mode=pelican -file=demo.md
-fmt=blockquote
+format=blockquote
 attach_cmd=true
 ~~~
 ```
 
 * cmd: required, command to execute
-* fmt: optional, blockquote/code/bold
+* format: optional, blockquote/code/bold
 * attach_cmd: optional, attach cmd or not (if value exist, attach cmd)
