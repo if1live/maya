@@ -17,6 +17,8 @@ func TestGet(t *testing.T) {
 		{"Subtitle : bar", "subtitle", "bar"},
 		{"SLUG   :   spam", "slug", "spam"},
 		{"title : this is title", "title", "this is title"},
+		{"title : foo : bar : spam", "title", "foo : bar : spam"},
+		{"title :  strip   ", "title", "strip"},
 		{"title : xxx", "", ""},
 		{"title : xxx", "not-exist", ""},
 	}

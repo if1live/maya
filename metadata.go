@@ -20,8 +20,13 @@ const (
 	ModeEmpty   = "empty"
 )
 
+type ArticleMetadataKeyValue struct {
+	Key   string
+	Value string
+}
+
 type ArticleMetadata struct {
-	table map[string]string
+	table []ArticleMetadataKeyValue
 }
 
 type MetadataTemplateLoader struct {
@@ -30,21 +35,21 @@ type MetadataTemplateLoader struct {
 }
 
 func NewMetadata(text string) *ArticleMetadata {
-	table := make(map[string]string)
+	table := []ArticleMetadataKeyValue{}
 
 	lines := strings.Split(text, "\n")
-	re := regexp.MustCompile(`(.+):(.*)`)
+	re := regexp.MustCompile(`(\w+)\s*:(.*)`)
 	for _, line := range lines {
 		m := re.FindStringSubmatch(line)
 		if m == nil {
 			continue
 		}
 		key, value := m[1], m[2]
-		key = strings.Trim(key, " ")
 		value = strings.Trim(value, " ")
 		key = strings.ToLower(key)
 
-		table[key] = value
+		t := ArticleMetadataKeyValue{key, value}
+		table = append(table, t)
 	}
 
 	return &ArticleMetadata{
@@ -53,7 +58,13 @@ func NewMetadata(text string) *ArticleMetadata {
 }
 
 func (m *ArticleMetadata) Get(key string) string {
-	return m.table[key]
+	for i := 0; i < len(m.table); i++ {
+		t := m.table[i]
+		if t.Key == key {
+			return t.Value
+		}
+	}
+	return ""
 }
 
 func (m *ArticleMetadata) GetList(key string) []string {
