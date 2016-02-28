@@ -38,8 +38,8 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		},
 		// complex
 		{
-			CommandExecute{"ls | sort | head -n 1", false, OutputFormatCode},
-			[]string{"Godeps", ""},
+			CommandExecute{"ls | sort | grep \".go\" | head -n 1", false, OutputFormatCode},
+			[]string{"article.go", ""},
 		},
 	}
 	for _, c := range cases {
