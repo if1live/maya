@@ -1,16 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
-	"strings"
-
-	"github.com/op/go-logging"
-)
+import "strconv"
 
 type Command interface {
 	Formatter() *OutputFormatter
@@ -50,161 +40,17 @@ func (ca *CommandArguments) BoolVal(key string, defaultVal bool) bool {
 	}
 }
 
-type CommandView struct {
-	FilePath  string
-	StartLine int
-	EndLine   int
-	Language  string
-	Format    string
-}
-
-func (c *CommandView) RawOutput() []string {
-	log := logging.MustGetLogger("maya")
-	log.Infof("Command ViewFile: %v", c)
-	data, err := ioutil.ReadFile(c.FilePath)
-	if err != nil {
-		panic(err)
-	}
-	lines := strings.Split(string(data[:]), "\n")
-
-	if c.StartLine == 0 && c.EndLine == 0 {
-		c.EndLine = len(lines)
-	}
-
-	return lines[c.StartLine:c.EndLine]
-}
-
-func (c *CommandView) Formatter() *OutputFormatter {
-	return &OutputFormatter{c.Format}
-}
-
-func (c *CommandView) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput(), c.Language)
-}
-
-type CommandExecute struct {
-	Cmd       string
-	AttachCmd bool
-	Format    string
-}
-
-func (c *CommandExecute) RawOutput() []string {
-	log := logging.MustGetLogger("maya")
-	log.Infof("Command execute: %v", c)
-
-	elems := []string{}
-	if c.AttachCmd {
-		elems = append(elems, "$ "+c.Cmd)
-	}
-
-	tmpfile, err := ioutil.TempFile("", "maya")
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(tmpfile.Name())
-
-	if _, err := tmpfile.Write([]byte(c.Cmd)); err != nil {
-		panic(err)
-	}
-	if err := tmpfile.Close(); err != nil {
-		panic(err)
-	}
-	out, err := exec.Command("bash", tmpfile.Name()).CombinedOutput()
-
-	if err != nil {
-		if _, ok := err.(*exec.Error); ok {
-			elems = append(elems, err.Error())
-			return elems
-		}
-	}
-
-	elems = append(elems, strings.Split(string(out[:]), "\n")...)
-	return elems
-}
-
-func (c *CommandExecute) Formatter() *OutputFormatter {
-	return &OutputFormatter{c.Format}
-}
-
-func (c *CommandExecute) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput())
-}
-
-type CommandYoutube struct {
-	VideoId string
-	Width   int
-	Height  int
-}
-
-func (c *CommandYoutube) Formatter() *OutputFormatter {
-	return &OutputFormatter{OutputFormatText}
-}
-
-func (c *CommandYoutube) RawOutput() []string {
-	return []string{
-		`<div class="maya-youtube">`,
-		fmt.Sprintf(`<iframe width="%d" height="%d" src="//www.youtube.com/embed/%s" frameborder="0" allowfullscreen></iframe>`, c.Width, c.Height, c.VideoId),
-		`</div>`,
-	}
-}
-
-func (c *CommandYoutube) Execute() string {
-	return c.Formatter().Format(c.RawOutput())
-}
-
-type CommandUnknown struct {
-	Action string
-}
-
-func (c *CommandUnknown) RawOutput() []string {
-	log := logging.MustGetLogger("maya")
-	log.Warningf("Command Unknown: %v", c)
-	tokens := []string{
-		"Action=" + c.Action,
-	}
-	return tokens
-}
-func (c *CommandUnknown) Formatter() *OutputFormatter {
-	return &OutputFormatter{OutputFormatBlockquote}
-}
-
-func (c *CommandUnknown) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput())
-}
-
 func NewCommand(action string, args *CommandArguments) Command {
-	switch action {
-	case "view":
-		filePath := args.StringVal("file", "")
-		defaultLang := strings.Replace(filepath.Ext(filePath), ".", "", -1)
-		language := args.StringVal("lang", defaultLang)
+	type CommandCreateFunc func(string, *CommandArguments) Command
 
-		return &CommandView{
-			FilePath:  filePath,
-			StartLine: args.IntVal("start_line", 0),
-			EndLine:   args.IntVal("end_line", 0),
-			Language:  language,
-			Format:    args.StringVal("format", OutputFormatCode),
-		}
-	case "execute":
-		return &CommandExecute{
-			Cmd:       args.StringVal("cmd", "echo empty"),
-			AttachCmd: args.BoolVal("attach_cmd", false),
-			Format:    args.StringVal("format", OutputFormatCode),
-		}
-	case "youtube":
-		return &CommandYoutube{
-			VideoId: args.StringVal("video_id", ""),
-			Width:   args.IntVal("width", 640),
-			Height:  args.IntVal("height", 480),
-		}
-
-	default:
-		return &CommandUnknown{
-			Action: action,
-		}
+	table := map[string]CommandCreateFunc{
+		"view":    NewCommandView,
+		"execute": NewCommandExecute,
+		"youtube": NewCommandYoutube,
+	}
+	if fn, ok := table[action]; ok {
+		return fn(action, args)
+	} else {
+		return NewCommandUnknown(action, args)
 	}
 }
