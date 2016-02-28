@@ -1,6 +1,7 @@
-{{with .Get "title"}}Title: {{.}}{{end}}
-{{with .Get "subtitle"}}Subtitle: {{.}}{{end}}
-{{with .Get "slug"}}Slug: {{.}}{{end}}
-{{with .GetList "tags"}}Tags: {{join . ", "}}{{end}}
-{{with .Get "date"}}Date: {{.}}{{end}}
-{{with .Get "author"}}Author: {{.}}{{end}}
+{{range $_,$elem := .Table}}
+{{if $elem.IsListValue}}
+{{title $elem.Key}}: {{join $elem.ListValue ", "}}
+{{else}}
+{{title $elem.Key}}: {{$elem.Value}}
+{{end}}
+{{end}}

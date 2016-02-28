@@ -20,55 +20,24 @@ const (
 	ModeEmpty   = "empty"
 )
 
-type ArticleMetadataKeyValue struct {
+type MetadataKeyValue struct {
 	Key   string
 	Value string
 }
 
-type ArticleMetadata struct {
-	table []ArticleMetadataKeyValue
+func (kv *MetadataKeyValue) IsListValue() bool {
+	re := regexp.MustCompile(`^\[.*\]$`)
+	return re.FindString(kv.Value) != ""
 }
 
-type MetadataTemplateLoader struct {
-	texts     map[string]string
-	templates map[string]*template.Template
-}
-
-func NewMetadata(text string) *ArticleMetadata {
-	table := []ArticleMetadataKeyValue{}
-
-	lines := strings.Split(text, "\n")
-	re := regexp.MustCompile(`(\w+)\s*:(.*)`)
-	for _, line := range lines {
-		m := re.FindStringSubmatch(line)
-		if m == nil {
-			continue
-		}
-		key, value := m[1], m[2]
-		value = strings.Trim(value, " ")
-		key = strings.ToLower(key)
-
-		t := ArticleMetadataKeyValue{key, value}
-		table = append(table, t)
+func (kv *MetadataKeyValue) ListValue() []string {
+	re := regexp.MustCompile(`^\[(.*)\]$`)
+	m := re.FindStringSubmatch(kv.Value)
+	if len(m) == 0 {
+		return []string{}
 	}
 
-	return &ArticleMetadata{
-		table: table,
-	}
-}
-
-func (m *ArticleMetadata) Get(key string) string {
-	for i := 0; i < len(m.table); i++ {
-		t := m.table[i]
-		if t.Key == key {
-			return t.Value
-		}
-	}
-	return ""
-}
-
-func (m *ArticleMetadata) GetList(key string) []string {
-	vals := strings.Split(m.Get(key), ",")
+	vals := strings.Split(m[1], ",")
 	for i, val := range vals {
 		vals[i] = strings.Trim(val, " ")
 	}
@@ -82,6 +51,56 @@ func (m *ArticleMetadata) GetList(key string) []string {
 		}
 	}
 	return result
+}
+
+type ArticleMetadata struct {
+	Table []MetadataKeyValue
+}
+
+type MetadataTemplateLoader struct {
+	texts     map[string]string
+	templates map[string]*template.Template
+}
+
+func NewMetadata(text string) *ArticleMetadata {
+	table := []MetadataKeyValue{}
+
+	lines := strings.Split(text, "\n")
+	re := regexp.MustCompile(`(\w+)\s*:(.*)`)
+	for _, line := range lines {
+		m := re.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+		key, value := m[1], m[2]
+		value = strings.Trim(value, " ")
+		key = strings.ToLower(key)
+
+		t := MetadataKeyValue{key, value}
+		table = append(table, t)
+	}
+
+	return &ArticleMetadata{
+		Table: table,
+	}
+}
+
+func (m *ArticleMetadata) Get(key string) string {
+	for _, t := range m.Table {
+		if t.Key == key {
+			return t.Value
+		}
+	}
+	return ""
+}
+
+func (m *ArticleMetadata) GetList(key string) []string {
+	for _, t := range m.Table {
+		if t.Key == key {
+			return t.ListValue()
+		}
+	}
+	return []string{}
 }
 
 func NewTemplateLoader() MetadataTemplateLoader {
