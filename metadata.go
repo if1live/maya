@@ -98,15 +98,20 @@ func NewTemplateLoader() MetadataTemplateLoader {
 		{ModeHugo, "templates/metadata_hugo.tpl"},
 		{ModeEmpty, "templates/metadata_empty.tpl"},
 	}
+
+	const packageName = "github.com/if1live/maya"
+	executableDir, _ := osext.ExecutableFolder()
+
 	for _, target := range targets {
-		dir, _ := osext.ExecutableFolder()
-		candidates := []string{
-			target.filepath,
-			filepath.Join(dir, target.filepath),
-			filepath.Join(os.Getenv("GOPATH"), "src", "github.com/if1live/maya", target.filepath),
+		candidatePaths := []string{
+			".",
+			executableDir,
+			filepath.Join(os.Getenv("GOPATH"), "src", packageName),
 		}
+
 		found := false
-		for _, candidate := range candidates {
+		for _, path := range candidatePaths {
+			candidate := filepath.Join(path, target.filepath)
 			if loader.Register(target.mode, candidate) {
 				found = true
 				break
@@ -135,36 +140,39 @@ func (l *MetadataTemplateLoader) Register(mode, filepath string) bool {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Metadata Template Load Success [%s] %s", mode, filepath)
 	return true
+}
 
+func makeSeperator(text string, sep string) string {
+	count := 0
+
+	for i, w := 0, 0; i < len(text); i += w {
+		_, width := utf8.DecodeRuneInString(text[i:])
+		if width == 1 {
+			count += 1
+		} else {
+			count += 2
+		}
+		w = width
+	}
+
+	tokens := make([]string, count)
+	for i := 0; i < count; i++ {
+		tokens[i] = sep
+	}
+	return strings.Join(tokens, "")
+}
+
+func isString(x interface{}) bool {
+	_, ok := x.(string)
+	return ok
 }
 
 func (l *MetadataTemplateLoader) createFuncMap() template.FuncMap {
 	return template.FuncMap{
-		"title": strings.Title,
-		"join":  strings.Join,
-		"seperator": func(text string, sep string) string {
-			count := 0
-
-			for i, w := 0, 0; i < len(text); i += w {
-				_, width := utf8.DecodeRuneInString(text[i:])
-				if width == 1 {
-					count += 1
-				} else {
-					count += 2
-				}
-				w = width
-			}
-
-			tokens := make([]string, count)
-			for i := 0; i < count; i++ {
-				tokens[i] = sep
-			}
-			return strings.Join(tokens, "")
-		},
-		"isString": func(x interface{}) bool {
-			_, ok := x.(string)
-			return ok
-		},
+		"title":     strings.Title,
+		"join":      strings.Join,
+		"seperator": makeSeperator,
+		"isString":  isString,
 	}
 }
 

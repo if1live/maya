@@ -87,3 +87,35 @@ date = "2016-02-20"
 		assert.Equal(t, c.expected, c.actual)
 	}
 }
+
+func Test_makeSeperator(t *testing.T) {
+	cases := []struct {
+		input    string
+		sep      string
+		expected string
+	}{
+		{"abc", "=", "==="},
+		{"abc", "-", "---"},
+		{"", "-", ""},
+		{"한글12", "=", "======"},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expected, makeSeperator(c.input, c.sep))
+	}
+}
+
+func Test_isString(t *testing.T) {
+	cases := []struct {
+		input    interface{}
+		expected bool
+	}{
+		{"hello", true},
+		{123, false},
+		{nil, false},
+		{[]bool{}, false},
+		{map[string]string{}, false},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expected, isString(c.input))
+	}
+}
