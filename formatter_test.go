@@ -62,6 +62,12 @@ func TestFormat(t *testing.T) {
 			[]string{},
 			"**hello**\n**world**",
 		},
+		{
+			OutputFormatText,
+			[]string{"hello", "world"},
+			[]string{},
+			"hello\nworld",
+		},
 	}
 	for _, c := range cases {
 		f := OutputFormatter{c.format}

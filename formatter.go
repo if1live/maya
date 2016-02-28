@@ -6,6 +6,7 @@ const (
 	OutputFormatCode       = "code"
 	OutputFormatBlockquote = "blockquote"
 	OutputFormatBold       = "bold"
+	OutputFormatText       = "text"
 )
 
 type OutputFormatter struct {
@@ -28,6 +29,8 @@ func (f *OutputFormatter) Format(lines []string, args ...string) string {
 		return f.formatBlockquote(lines)
 	case OutputFormatBold:
 		return f.formatBold(lines)
+	case OutputFormatText:
+		return f.formatText(lines)
 	default:
 		msg := "unknown format : " + f.format
 		panic(msg)
@@ -87,6 +90,10 @@ func (f *OutputFormatter) formatBold(lines []string) string {
 		contents[i] = "**" + line + "**"
 	}
 	return strings.Join(contents, "\n")
+}
+
+func (f *OutputFormatter) formatText(lines []string) string {
+	return strings.Join(lines, "\n")
 }
 
 func (f *OutputFormatter) Run(text string, args ...string) string {

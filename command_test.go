@@ -179,6 +179,14 @@ func TestNewCommand(t *testing.T) {
 			&CommandExecute{"echo hello", true, OutputFormatBlockquote},
 		},
 		{
+			NewCommand("youtube", &CommandArguments{map[string]string{
+				"video_id": "id",
+				"width":    "480",
+				"height":   "320",
+			}}),
+			&CommandYoutube{"id", 480, 320},
+		},
+		{
 			NewCommand("hello", &CommandArguments{map[string]string{"key": "value"}}),
 			&CommandUnknown{"hello"},
 		},

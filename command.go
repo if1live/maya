@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,13 +10,6 @@ import (
 	"strings"
 
 	"github.com/op/go-logging"
-)
-
-const (
-	CommandTypeView    = "view"
-	CommandTypeExecute = "execute"
-	CommandTypeYoutube = "youtube"
-	CommandTypeUnknown = "unknown"
 )
 
 type Command interface {
@@ -138,6 +132,28 @@ func (c *CommandExecute) Execute() string {
 	return formatter.Format(c.RawOutput())
 }
 
+type CommandYoutube struct {
+	VideoId string
+	Width   int
+	Height  int
+}
+
+func (c *CommandYoutube) Formatter() *OutputFormatter {
+	return &OutputFormatter{OutputFormatText}
+}
+
+func (c *CommandYoutube) RawOutput() []string {
+	return []string{
+		`<div class="maya-youtube">`,
+		fmt.Sprintf(`<iframe width="%d" height="%d" src="//www.youtube.com/embed/%s" frameborder="0" allowfullscreen></iframe>`, c.Width, c.Height, c.VideoId),
+		`</div>`,
+	}
+}
+
+func (c *CommandYoutube) Execute() string {
+	return c.Formatter().Format(c.RawOutput())
+}
+
 type CommandUnknown struct {
 	Action string
 }
@@ -179,6 +195,13 @@ func NewCommand(action string, args *CommandArguments) Command {
 			AttachCmd: args.BoolVal("attach_cmd", false),
 			Format:    args.StringVal("format", OutputFormatCode),
 		}
+	case "youtube":
+		return &CommandYoutube{
+			VideoId: args.StringVal("video_id", ""),
+			Width:   args.IntVal("width", 640),
+			Height:  args.IntVal("height", 480),
+		}
+
 	default:
 		return &CommandUnknown{
 			Action: action,
