@@ -61,7 +61,7 @@ go install github.com/if1live/maya
 
 **demo.md**
 
-```
+```md
 title: this is title
 subtitle: this is subtitle
 tags: lisp, demo
@@ -96,7 +96,7 @@ format=blockquote
 **demo.lisp**
 demo.lisp is used in ``demo.md``.
 
-```
+```lisp
 (defun function... () (princ "and ..."))
 (function...)
 
@@ -117,13 +117,13 @@ slug: sample-article
 
 ## write article
 
-```
+```lisp
 (defun function... () (princ "and ..."))
 (function...)
 
 ```
 
-```
+```lisp
 (defun function... () (princ "and ..."))
 ```
 

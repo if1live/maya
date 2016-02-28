@@ -31,8 +31,7 @@ func (cb *ContentBlock) Lines() []string {
 		params[key] = value
 	}
 	cmd := NewCommand(cb.command, &CommandArguments{params})
-	formatter := cmd.Formatter()
-	return []string{formatter.Format(cmd.RawOutput())}
+	return []string{cmd.Execute()}
 }
 
 func NewContent(text string) *ArticleContent {

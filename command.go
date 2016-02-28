@@ -21,6 +21,7 @@ const (
 type Command interface {
 	Formatter() *OutputFormatter
 	RawOutput() []string
+	Execute() string
 }
 
 type CommandArguments struct {
@@ -83,6 +84,11 @@ func (c *CommandView) Formatter() *OutputFormatter {
 	return &OutputFormatter{c.Format}
 }
 
+func (c *CommandView) Execute() string {
+	formatter := c.Formatter()
+	return formatter.Format(c.RawOutput(), c.Language)
+}
+
 type CommandExecute struct {
 	Cmd       string
 	AttachCmd bool
@@ -127,6 +133,11 @@ func (c *CommandExecute) Formatter() *OutputFormatter {
 	return &OutputFormatter{c.Format}
 }
 
+func (c *CommandExecute) Execute() string {
+	formatter := c.Formatter()
+	return formatter.Format(c.RawOutput())
+}
+
 type CommandUnknown struct {
 	Action string
 }
@@ -141,6 +152,11 @@ func (c *CommandUnknown) RawOutput() []string {
 }
 func (c *CommandUnknown) Formatter() *OutputFormatter {
 	return &OutputFormatter{OutputFormatBlockquote}
+}
+
+func (c *CommandUnknown) Execute() string {
+	formatter := c.Formatter()
+	return formatter.Format(c.RawOutput())
 }
 
 func NewCommand(action string, args *CommandArguments) Command {
