@@ -27,6 +27,12 @@ func TestFormat(t *testing.T) {
 			"```python\nhello\nworld\n```",
 		},
 		{
+			OutputFormatCode,
+			[]string{"hello", "world"},
+			[]string{"py"},
+			"```python\nhello\nworld\n```",
+		},
+		{
 			OutputFormatBlockquote,
 			[]string{"hello", "world"},
 			[]string{},
@@ -48,5 +54,22 @@ func TestFormat(t *testing.T) {
 	for _, c := range cases {
 		f := OutputFormatter{c.format}
 		assert.Equal(t, c.output, f.Format(c.lines, c.args...))
+	}
+}
+
+func Test_convertLanguage(t *testing.T) {
+	cases := []struct {
+		in  string
+		out string
+	}{
+		{"py", "python"},
+		{"python", "python"},
+		{"", ""},
+		{"asdf", "asdf"},
+	}
+
+	f := OutputFormatter{OutputFormatCode}
+	for _, c := range cases {
+		assert.Equal(t, c.out, f.convertLanguage(c.in))
 	}
 }

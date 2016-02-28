@@ -36,7 +36,7 @@ func (f *OutputFormatter) Format(lines []string, args ...string) string {
 }
 
 func (f *OutputFormatter) formatCode(lines []string, lang string) string {
-	headLine := "```" + lang
+	headLine := "```" + f.convertLanguage(lang)
 	tailLine := "```"
 
 	contents := make([]string, len(lines)+2)
@@ -46,6 +46,21 @@ func (f *OutputFormatter) formatCode(lines []string, lang string) string {
 	}
 	contents[len(contents)-1] = tailLine
 	return strings.Join(contents, "\n")
+}
+
+func (f *OutputFormatter) convertLanguage(lang string) string {
+	table := map[string]string{
+		"cs": "csharp",
+		"py": "python",
+		"rb": "ruby",
+	}
+
+	found := table[lang]
+	if found != "" {
+		return found
+	} else {
+		return lang
+	}
 }
 
 func (f *OutputFormatter) formatBlockquote(lines []string) string {
