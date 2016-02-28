@@ -34,6 +34,11 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 			CommandExecute{"invalid", true, OutputFormatCode},
 			[]string{"$ invalid", "exec: \"invalid\": executable file not found in $PATH"},
 		},
+		// local path
+		{
+			CommandExecute{"./demo.sh", true, OutputFormatCode},
+			[]string{"$ ./demo.sh", "hello-world!", ""},
+		},
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.output, c.cmd.RawOutput())
