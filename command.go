@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -63,11 +64,6 @@ type CommandExecute struct {
 	Format    string
 }
 
-func (c *CommandExecute) SplitCommand() (string, []string) {
-	tokens := strings.Split(c.Cmd, " ")
-	return tokens[0], tokens[1:]
-}
-
 func (c *CommandExecute) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command execute: %v", c)
@@ -77,8 +73,20 @@ func (c *CommandExecute) RawOutput() []string {
 		elems = append(elems, "$ "+c.Cmd)
 	}
 
-	name, args := c.SplitCommand()
-	out, err := exec.Command(name, args...).CombinedOutput()
+	tmpfile, err := ioutil.TempFile("", "maya")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	if _, err := tmpfile.Write([]byte(c.Cmd)); err != nil {
+		panic(err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		panic(err)
+	}
+	out, err := exec.Command("bash", tmpfile.Name()).CombinedOutput()
+
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok {
 			elems = append(elems, err.Error())

@@ -26,18 +26,20 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 			[]string{"$ clang", "clang: error: no input files", ""},
 		},
 		// command not exist
-		{
-			CommandExecute{"invalid-cmd", false, OutputFormatCode},
-			[]string{"exec: \"invalid-cmd\": executable file not found in $PATH"},
-		},
-		{
-			CommandExecute{"invalid", true, OutputFormatCode},
-			[]string{"$ invalid", "exec: \"invalid\": executable file not found in $PATH"},
-		},
+		// 임시폴더를 쓰기때문에 임의의 경로가 나온다
+		//{
+		//	CommandExecute{"invalid-cmd", false, OutputFormatCode},
+		//	[]string{"exec: \"invalid-cmd\": executable file not found in $PATH"},
+		//},
 		// local path
 		{
 			CommandExecute{"./demo.sh", true, OutputFormatCode},
 			[]string{"$ ./demo.sh", "hello-world!", ""},
+		},
+		// complex
+		{
+			CommandExecute{"ls | sort | head -n 1", false, OutputFormatCode},
+			[]string{"Godeps", ""},
 		},
 	}
 	for _, c := range cases {
