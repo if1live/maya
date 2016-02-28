@@ -7,80 +7,116 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRunCommandExecute(t *testing.T) {
+func TestFormat(t *testing.T) {
+	cases := []struct {
+		format string
+		lines  []string
+		args   []string
+		output string
+	}{
+		{OutputFormatCode, []string{}, []string{}, ""},
+		{
+			OutputFormatCode,
+			[]string{"hello", "world"},
+			[]string{},
+			"```\nhello\nworld\n```",
+		},
+		{
+			OutputFormatCode,
+			[]string{"hello", "world"},
+			[]string{"python"},
+			"```python\nhello\nworld\n```",
+		},
+		{
+			OutputFormatBlockquote,
+			[]string{"hello", "world"},
+			[]string{},
+			"> hello\n>\n> world",
+		},
+		{
+			OutputFormatBlockquote,
+			[]string{"hello", "", "world"},
+			[]string{},
+			"> hello\n>\n>\n>\n> world",
+		},
+		{
+			OutputFormatBold,
+			[]string{"hello", "world"},
+			[]string{},
+			"**hello**\n**world**",
+		},
+	}
+	for _, c := range cases {
+		f := OutputFormatter{c.format}
+		assert.Equal(t, c.output, f.Format(c.lines, c.args...))
+	}
+}
+
+func TestRawOutpoutCommandExecute(t *testing.T) {
 	cases := []struct {
 		cmd    CommandExecute
-		output string
+		output []string
 	}{
 		{
 			CommandExecute{"echo hello", false, OutputFormatCode},
-			"```\nhello\n```",
+			[]string{"hello", ""},
+		},
+		// stderr
+		{
+			CommandExecute{"clang", false, OutputFormatCode},
+			[]string{"clang: error: no input files", ""},
 		},
 		{
-			CommandExecute{"echo hello", false, OutputFormatBlockquote},
-			"> hello\n",
+			CommandExecute{"clang", true, OutputFormatCode},
+			[]string{"$ clang", "clang: error: no input files", ""},
+		},
+		// command not exist
+		{
+			CommandExecute{"invalid-cmd", false, OutputFormatCode},
+			[]string{"exec: \"invalid-cmd\": executable file not found in $PATH"},
 		},
 		{
-			CommandExecute{"echo hello", true, OutputFormatBlockquote},
-			"> $ echo hello\n> hello\n",
+			CommandExecute{"invalid", true, OutputFormatCode},
+			[]string{"$ invalid", "exec: \"invalid\": executable file not found in $PATH"},
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.Run())
+		assert.Equal(t, c.output, c.cmd.RawOutput())
 	}
 }
 
-func TestRunCommandViewFile(t *testing.T) {
+func TestRawOutputCommandView(t *testing.T) {
 	cases := []struct {
-		cmd    CommandViewFile
-		output string
+		cmd    CommandView
+		output []string
 	}{
 		{
-			CommandViewFile{
+			CommandView{
 				FilePath:  "command_test.go",
 				StartLine: 1,
 				EndLine:   3,
 				Format:    OutputFormatCode,
 			},
-			"```\n\nimport (\n```",
-		},
-		{
-			CommandViewFile{
-				FilePath:  "command_test.go",
-				StartLine: 1,
-				EndLine:   3,
-				Format:    OutputFormatBlockquote,
-			},
-			">\n> import (",
-		},
-		{
-			CommandViewFile{
-				FilePath:  "command_test.go",
-				StartLine: 1,
-				EndLine:   3,
-				Language:  "go",
-				Format:    OutputFormatCode,
-			},
-			"```go\n\nimport (\n```",
+			[]string{"", "import ("},
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.Run())
+		assert.Equal(t, c.output, c.cmd.RawOutput())
 	}
 }
 
-func TestRunCommandUnknown(t *testing.T) {
+func TestRawOutputCommandUnknown(t *testing.T) {
 	cases := []struct {
 		cmd    CommandUnknown
-		output string
+		output []string
 	}{
 		{
 			CommandUnknown{"foo", "bar"},
-			"**Action=foo, Params=bar**",
+			[]string{"Action=foo", "Params=bar"},
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.Run())
+		assert.Equal(t, c.output, c.cmd.RawOutput())
 	}
 }
 
@@ -91,15 +127,15 @@ func TestNewCommand(t *testing.T) {
 	}{
 		{
 			NewCommand("view", "file=hello.txt"),
-			&CommandViewFile{"hello.txt", 0, 0, "txt", OutputFormatCode},
+			&CommandView{"hello.txt", 0, 0, "txt", OutputFormatCode},
 		},
 		{
 			NewCommand("view", "file=foo.txt,start=1,end=10,fmt=blockquote"),
-			&CommandViewFile{"foo.txt", 1, 10, "txt", OutputFormatBlockquote},
+			&CommandView{"foo.txt", 1, 10, "txt", OutputFormatBlockquote},
 		},
 		{
 			NewCommand("view", "file=hello.txt,lang=lisp"),
-			&CommandViewFile{"hello.txt", 0, 0, "lisp", OutputFormatCode},
+			&CommandView{"hello.txt", 0, 0, "lisp", OutputFormatCode},
 		},
 		{
 			NewCommand("execute", "cmd=echo hello"),

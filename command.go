@@ -17,51 +17,90 @@ const (
 	OutputFormatBold       = "bold"
 )
 
+const (
+	CommandTypeView    = "view"
+	CommandTypeExecute = "execute"
+	CommandTypeYoutube = "youtube"
+	CommandTypeUnknown = "unknown"
+)
+
 type Command interface {
 	Run() string
+	RawOutput() []string
+}
+
+type CommandArguments struct {
+	Args map[string]string
 }
 
 type OutputFormatter struct {
-	Format string
+	format string
+}
+
+func (f *OutputFormatter) Format(lines []string, args ...string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+
+	switch f.format {
+	case OutputFormatCode:
+		lang := ""
+		if len(args) > 0 {
+			lang = args[0]
+		}
+		return f.formatCode(lines, lang)
+	case OutputFormatBlockquote:
+		return f.formatBlockquote(lines)
+	case OutputFormatBold:
+		return f.formatBold(lines)
+	default:
+		msg := "unknown format : " + f.format
+		panic(msg)
+	}
+	return ""
+}
+
+func (f *OutputFormatter) formatCode(lines []string, lang string) string {
+	headLine := "```" + lang
+	tailLine := "```"
+
+	contents := make([]string, len(lines)+2)
+	contents[0] = headLine
+	for i, line := range lines {
+		contents[i+1] = line
+	}
+	contents[len(contents)-1] = tailLine
+	return strings.Join(contents, "\n")
+}
+
+func (f *OutputFormatter) formatBlockquote(lines []string) string {
+	contents := make([]string, len(lines)*2-1)
+	for i, line := range lines {
+		contents[i*2+0] = "> " + line
+		if i != len(lines)-1 {
+			contents[i*2+1] = "> "
+		}
+	}
+	for i, line := range contents {
+		contents[i] = strings.Trim(line, " ")
+	}
+	return strings.Join(contents, "\n")
+}
+
+func (f *OutputFormatter) formatBold(lines []string) string {
+	contents := make([]string, len(lines))
+	for i, line := range lines {
+		contents[i] = "**" + line + "**"
+	}
+	return strings.Join(contents, "\n")
 }
 
 func (f *OutputFormatter) Run(text string, args ...string) string {
-	switch f.Format {
-	case OutputFormatCode:
-		content := "```"
-		if len(args) > 0 {
-			content += args[0]
-		}
-
-		content = content + "\n" + text
-
-		if text[len(text)-1] == byte('\n') {
-			content += "```"
-		} else {
-			content += "\n```"
-		}
-		return content
-
-	case OutputFormatBold:
-		return "**" + text + "**"
-
-	case OutputFormatBlockquote:
-		lines := strings.Split(text, "\n")
-		for i, line := range lines {
-			isLastLine := (i == len(lines)-1)
-			if !isLastLine || (isLastLine && len(line) != 0) {
-				lines[i] = strings.TrimRight("> "+line, " ")
-			}
-		}
-		return strings.Join(lines, "\n")
-
-	default:
-		msg := "unknown format : " + f.Format
-		panic(msg)
-	}
+	lines := strings.Split(text, "\n")
+	return f.Format(lines, args...)
 }
 
-type CommandViewFile struct {
+type CommandView struct {
 	FilePath  string
 	StartLine int
 	EndLine   int
@@ -69,7 +108,7 @@ type CommandViewFile struct {
 	Format    string
 }
 
-func (c *CommandViewFile) Run() string {
+func (c *CommandView) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command ViewFile: %v", c)
 	data, err := ioutil.ReadFile(c.FilePath)
@@ -82,7 +121,11 @@ func (c *CommandViewFile) Run() string {
 		c.EndLine = len(lines)
 	}
 
-	text := strings.Join(lines[c.StartLine:c.EndLine], "\n")
+	return lines[c.StartLine:c.EndLine]
+}
+
+func (c *CommandView) Run() string {
+	text := strings.Join(c.RawOutput(), "\n")
 	formatter := OutputFormatter{c.Format}
 	return formatter.Run(text, c.Language)
 }
@@ -98,21 +141,30 @@ func (c *CommandExecute) SplitCommand() (string, []string) {
 	return tokens[0], tokens[1:]
 }
 
-func (c *CommandExecute) Run() string {
+func (c *CommandExecute) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command execute: %v", c)
-	name, args := c.SplitCommand()
-	out, err := exec.Command(name, args...).Output()
-	if err != nil {
-		panic(err)
-	}
 
 	elems := []string{}
 	if c.AttachCmd {
 		elems = append(elems, "$ "+c.Cmd)
 	}
-	elems = append(elems, string(out[:]))
-	text := strings.Join(elems, "\n")
+
+	name, args := c.SplitCommand()
+	out, err := exec.Command(name, args...).CombinedOutput()
+	if err != nil {
+		if _, ok := err.(*exec.Error); ok {
+			elems = append(elems, err.Error())
+			return elems
+		}
+	}
+
+	elems = append(elems, strings.Split(string(out[:]), "\n")...)
+	return elems
+}
+
+func (c *CommandExecute) Run() string {
+	text := strings.Join(c.RawOutput(), "\n")
 	formatter := OutputFormatter{c.Format}
 	return formatter.Run(text)
 }
@@ -122,17 +174,19 @@ type CommandUnknown struct {
 	Params string
 }
 
-func (c *CommandUnknown) Run() string {
+func (c *CommandUnknown) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Warningf("Command Unknown: %v", c)
 	tokens := []string{
-		"**",
 		"Action=" + c.Action,
-		", ",
 		"Params=" + c.Params,
-		"**",
 	}
-	return strings.Join(tokens, "")
+	return tokens
+}
+func (c *CommandUnknown) Run() string {
+	text := strings.Join(c.RawOutput(), "\n")
+	formatter := OutputFormatter{OutputFormatBlockquote}
+	return formatter.Run(text)
 }
 
 func NewCommand(action string, params string) Command {
@@ -158,7 +212,7 @@ func NewCommand(action string, params string) Command {
 			language = strings.Replace(filepath.Ext(filePath), ".", "", -1)
 		}
 
-		return &CommandViewFile{
+		return &CommandView{
 			FilePath:  filePath,
 			StartLine: startLine,
 			EndLine:   endLine,
