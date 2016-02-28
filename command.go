@@ -47,6 +47,7 @@ func NewCommand(action string, args *CommandArguments) Command {
 		"view":    NewCommandView,
 		"execute": NewCommandExecute,
 		"youtube": NewCommandYoutube,
+		"gist":    NewCommandGist,
 	}
 	if fn, ok := table[action]; ok {
 		return fn(action, args)

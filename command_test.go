@@ -187,6 +187,13 @@ func TestNewCommand(t *testing.T) {
 			&CommandYoutube{"id", 480, 320},
 		},
 		{
+			NewCommand("gist", &CommandArguments{map[string]string{
+				"id":   "3254906",
+				"file": "brew-update-notifier.sh",
+			}}),
+			&CommandGist{"3254906", "brew-update-notifier.sh"},
+		},
+		{
 			NewCommand("hello", &CommandArguments{map[string]string{"key": "value"}}),
 			&CommandUnknown{"hello"},
 		},
