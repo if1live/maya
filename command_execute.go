@@ -57,7 +57,7 @@ func (c *CommandExecute) readCache() []string {
 
 	retval := []string{}
 	for _, line := range lines {
-		if !strings.HasPrefix(line, "#") {
+		if !strings.HasPrefix(line, "# ") {
 			retval = append(retval, line)
 		}
 	}
