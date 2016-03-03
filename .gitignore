@@ -34,3 +34,6 @@ gocov.json
 
 # output
 maya
+
+# cache
+cache
