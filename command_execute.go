@@ -26,34 +26,61 @@ func NewCommandExecute(action string, args *CommandArguments) Command {
 	}
 }
 
-func (c *CommandExecute) CacheFileName() string {
+func (c *CommandExecute) cacheFileName() string {
+	data := []byte(c.Cmd)
+	return fmt.Sprintf("%x.txt", md5.Sum(data))
+}
+
+func (c *CommandExecute) cacheDir() string {
 	// 실행 경로를 캐시 생성 경로로 이용
 	pwd, _ := os.Getwd()
-
 	cachePath := filepath.Join(pwd, "cache")
-	os.MkdirAll(cachePath, 0755)
+	return cachePath
+}
 
-	data := []byte(c.Cmd)
-	filename := fmt.Sprintf("%x.txt", md5.Sum(data))
+func (c *CommandExecute) cacheFilePath() string {
+	dir := c.cacheDir()
+	filename := c.cacheFileName()
+	os.MkdirAll(dir, 0755)
+	return filepath.Join(dir, filename)
+}
 
-	cacheFile := filepath.Join(cachePath, filename)
-	return cacheFile
+func (c *CommandExecute) cacheExists() bool {
+	_, err := os.Stat(c.cacheFilePath())
+	return !os.IsNotExist(err)
+}
+
+func (c *CommandExecute) readCache() []string {
+	data, _ := ioutil.ReadFile(c.cacheFilePath())
+	text := string(data[:])
+	lines := strings.Split(text, "\n")
+
+	retval := []string{}
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "#") {
+			retval = append(retval, line)
+		}
+	}
+	return retval
+}
+
+func (c *CommandExecute) writeCache(lines []string) bool {
+	cacheLines := []string{
+		"# " + c.Cmd,
+	}
+	cacheLines = append(cacheLines, lines...)
+	data := []byte(strings.Join(cacheLines, "\n"))
+	ioutil.WriteFile(c.cacheFilePath(), data, 0644)
+	return true
 }
 
 func (c *CommandExecute) RawOutput() []string {
-	cacheFilePath := c.CacheFileName()
-	_, err := os.Stat(cacheFilePath)
-
 	outputLines := []string{}
-	if os.IsNotExist(err) {
-		outputLines = c.ExecuteImmediately()
-		data := []byte(strings.Join(outputLines, "\n"))
-		ioutil.WriteFile(cacheFilePath, data, 0644)
-
+	if c.cacheExists() {
+		outputLines = c.readCache()
 	} else {
-		data, _ := ioutil.ReadFile(cacheFilePath)
-		text := string(data[:])
-		outputLines = strings.Split(text, "\n")
+		outputLines = c.ExecuteImmediately()
+		c.writeCache(outputLines)
 	}
 
 	elems := []string{}
