@@ -186,12 +186,26 @@ func isString(x interface{}) bool {
 	return ok
 }
 
+func escape(val string) string {
+	table := []struct {
+		in  string
+		out string
+	}{
+		{`"`, `\"`},
+	}
+	for _, t := range table {
+		val = strings.Replace(val, t.in, t.out, -1)
+	}
+	return val
+}
+
 func (l *MetadataTemplateLoader) createFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"title":     strings.Title,
 		"join":      strings.Join,
 		"seperator": makeSeperator,
 		"isString":  isString,
+		"escape":    escape,
 	}
 }
 

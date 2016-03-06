@@ -75,7 +75,7 @@ func TestGetList(t *testing.T) {
 
 func TestExecute(t *testing.T) {
 	metadataText := `
-title: 제목
+title: "제목"
 subtitle: subtitle-1
 date: 2016-02-20
 tags: [foo, bar]
@@ -92,7 +92,7 @@ status: draft
 		{
 			loader.Execute(metadata, ModePelican),
 			strings.Trim(`
-Title: 제목
+Title: "제목"
 Subtitle: subtitle-1
 Date: 2016-02-20
 Tags: foo, bar
@@ -104,7 +104,7 @@ Status: draft
 			loader.Execute(metadata, ModeHugo),
 			strings.Trim(`
 +++
-title = "제목"
+title = "\"제목\""
 subtitle = "subtitle-1"
 date = "2016-02-20"
 tags = ["foo", "bar"]
@@ -148,5 +148,18 @@ func Test_isString(t *testing.T) {
 	}
 	for _, c := range cases {
 		assert.Equal(t, c.expected, isString(c.input))
+	}
+}
+
+func Test_escape(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{"hello", "hello"},
+		{`"hello"`, `\"hello\"`},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expected, escape(c.input))
 	}
 }

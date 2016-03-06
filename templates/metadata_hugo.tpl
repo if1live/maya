@@ -3,7 +3,7 @@
 {{if $elem.IsListValue}}
 {{$elem.Key}} = ["{{join $elem.ListValue "\", \""}}"]
 {{else}}
-{{$elem.Key}} = "{{$elem.Value}}"
+{{$elem.Key}} = "{{escape $elem.Value}}"
 {{end}}
 {{end}}
 +++
