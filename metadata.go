@@ -103,6 +103,40 @@ func (m *ArticleMetadata) GetList(key string) []string {
 	return []string{}
 }
 
+func (m *ArticleMetadata) Preprocess(mode string) {
+	type Func func(*ArticleMetadata)
+	funcs := map[string]Func{
+		"hugo": preprocessHugo,
+	}
+	if fn, ok := funcs[mode]; ok {
+		fn(m)
+	}
+}
+
+func preprocessHugo(m *ArticleMetadata) {
+	type Func func(string) string
+	funcs := map[string]Func{
+		"date": preprocessHugo_date,
+	}
+
+	for i, t := range m.Table {
+		if fn, ok := funcs[t.Key]; ok {
+			t.Value = fn(t.Value)
+			m.Table[i] = t
+		}
+	}
+}
+
+func preprocessHugo_date(val string) string {
+	// to support date-only format
+	// YYYY-MM-DD => YYYY-MM-DDT00:00:00+00:00
+	dateRe := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	if dateRe.MatchString(val) {
+		return val + "T00:00:00+00:00"
+	}
+	return val
+}
+
 func NewTemplateLoader() MetadataTemplateLoader {
 	loader := MetadataTemplateLoader{
 		texts:     map[string]string{},
@@ -210,13 +244,16 @@ func (l *MetadataTemplateLoader) createFuncMap() template.FuncMap {
 }
 
 func (l *MetadataTemplateLoader) Execute(metadata *ArticleMetadata, mode string) string {
+	metadataClone := *metadata
+	metadataClone.Preprocess(mode)
+
 	t := l.templates[mode]
 	if t == nil {
 		msg := "Unknown document mode : " + mode
 		panic(msg)
 	}
 	var b bytes.Buffer
-	t.Execute(&b, metadata)
+	t.Execute(&b, &metadataClone)
 	text := string(b.Bytes())
 	lines := strings.Split(text, "\n")
 

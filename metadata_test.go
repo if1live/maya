@@ -106,7 +106,7 @@ Status: draft
 +++
 title = "\"제목\""
 subtitle = "subtitle-1"
-date = "2016-02-20"
+date = "2016-02-20T00:00:00+00:00"
 tags = ["foo", "bar"]
 slug = "slug-1"
 status = "draft"
