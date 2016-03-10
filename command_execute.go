@@ -127,5 +127,5 @@ func (c *CommandExecute) Formatter() *OutputFormatter {
 
 func (c *CommandExecute) Execute() string {
 	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput())
+	return formatter.Format(c.RawOutput(), "bash")
 }
