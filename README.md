@@ -154,7 +154,7 @@ subtitle: this-is-subtitle
 
 ### Embed file
 
-ignore first backslash.
+ignore backslash.
 
 ```
 \~~~maya:view
@@ -163,6 +163,7 @@ lang=lisp
 start_line=1
 end_line=2
 format=blockquote
+\~~~
 ```
 
 | key | desc | required? |
@@ -183,6 +184,7 @@ ignore first backslash.
 cmd=maya -mode=pelican -flie=demo.md
 format=blockquote
 attach_cmd=true
+\~~~
 ```
 
 | key | desc | required? |
