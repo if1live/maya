@@ -14,7 +14,7 @@ script:
   - go test
   - go build -v
   - gocov test ./... -covermode count > gocov.json
-  - goveralls -service=travis-ci -gocovdata gocov.json
+  - goveralls -service=travis-ci
 
 notifications:
   email: false
