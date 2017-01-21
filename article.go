@@ -18,7 +18,9 @@ type Article struct {
 func NewArticleFromReader(r io.Reader, mode string) *Article {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r)
-	return NewArticle(buf.String(), mode)
+	text := buf.String()
+	text = strings.Replace(text, "\r", "", -1)
+	return NewArticle(text, mode)
 }
 
 func NewArticle(text string, mode string) *Article {
