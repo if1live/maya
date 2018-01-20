@@ -95,6 +95,11 @@ func (a *Article) Content() *ArticleContent {
 }
 
 func (a *Article) Output(w io.Writer) {
+	output := a.OutputString()
+	w.Write([]byte(output))
+}
+
+func (a *Article) OutputString() string {
 	metadata := a.Metadata()
 	header := a.loader.Execute(metadata, a.MetadataMode)
 
@@ -103,5 +108,6 @@ func (a *Article) Output(w io.Writer) {
 
 	output := strings.Join([]string{header, "", body}, "\n")
 	output = strings.TrimLeft(output, "\n")
-	w.Write([]byte(output))
+
+	return output
 }

@@ -10,11 +10,13 @@ import (
 var _mode string
 var _filePath string
 var _logLevel string
+var _outputPath string
 
 func init() {
 	flag.StringVar(&_mode, "mode", "", "document mode: pelican/hugo")
 	flag.StringVar(&_filePath, "file", "", "file path: xxx.md")
 	flag.StringVar(&_logLevel, "log", "ERROR", "log level: critical, error, warning, notice, info, debug")
+	flag.StringVar(&_outputPath, "output", "stdout", "output path: xxx.md")
 }
 
 var _formatter = logging.MustStringFormatter(
@@ -33,12 +35,20 @@ func main() {
 		log.Fatal("file path required. use -h")
 	}
 
-	f, err := os.Open(_filePath)
+	infile, err := os.Open(_filePath)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	article := NewArticleFromReader(f, _mode)
-	out := os.Stdout
-	article.Output(out)
+	outfile := os.Stdout
+	if _outputPath != "stdout" {
+		outfile, err = os.Create(_outputPath)
+		if err != nil {
+			panic(err)
+		}
+		defer outfile.Close()
+	}
+
+	article := NewArticleFromReader(infile, _mode)
+	article.Output(outfile)
 }
