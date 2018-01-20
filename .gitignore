@@ -33,7 +33,8 @@ coverage.out
 gocov.json
 
 # output
-maya
+maya-cli/maya-cli
+maya-cli/maya-cli.exe
 
 # cache
 cache

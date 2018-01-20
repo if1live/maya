@@ -55,7 +55,7 @@ Embedding command line output into markdown is bothering task. Maya execute comm
 ## Install
 
 ```bash
-go install github.com/if1live/maya
+go install github.com/if1live/maya/maya-cli
 ```
 
 ## Usage
@@ -115,7 +115,7 @@ sample()
 ## Step 2. Build document
 
 ```bash
-maya -mode=pelican -file=demo.md
+maya-cli -mode=pelican -file=demo.md
 ```
 
 -----
