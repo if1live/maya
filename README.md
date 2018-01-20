@@ -54,8 +54,56 @@ Embedding command line output into markdown is bothering task. Maya execute comm
 
 ## Install
 
+### Library
+
+```bash
+go get -u github.com/if1live/maya
+```
+
+source
+
+```golang
+package main
+
+import (
+	"fmt"
+
+	"github.com/if1live/maya"
+	"github.com/op/go-logging"
+)
+
+func main() {
+	logging.SetLevel(logging.CRITICAL, "maya")
+
+	intext := `gist sample begin
+~~~maya:gist
+id=b23494b9e42ae89e6f28
+file=factorial.sh
+~~~
+gist sample end`
+	article := maya.NewArticle(intext, "empty")
+	outtext := article.OutputString()
+	fmt.Println(outtext)
+}
+```
+
+output
+
+```bash
+gist sample begin
+<div class="maya-gist">
+<script src="https://gist.github.com/b23494b9e42ae89e6f28.js?file=factorial.sh"></script>
+</div>
+gist sample end
+```
+
+
+### Command line tool
+
 ```bash
 go install github.com/if1live/maya/maya-cli
+
+maya-cli -mode=pelican -file=demo.md
 ```
 
 ## Usage
