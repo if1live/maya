@@ -259,10 +259,13 @@ func (l *MetadataTemplateLoader) Execute(metadata *ArticleMetadata, mode string)
 
 	result := []string{}
 	for _, line := range lines {
-		if len(strings.Trim(line, " ")) > 0 {
+		line = strings.Replace(line, "\r", "", -1)
+		line = strings.Trim(line, " ")
+		if len(line) > 0 {
 			result = append(result, line)
 		}
 	}
+
 	return strings.Join(result, "\n")
 }
 

@@ -43,7 +43,9 @@ func (c *CommandView) RawOutput() []string {
 		c.EndLine = len(lines)
 	}
 
-	return lines[c.StartLine:c.EndLine]
+	elems := lines[c.StartLine:c.EndLine]
+	elems = sanitizeLineFeedMultiLine(elems)
+	return elems
 }
 
 func (c *CommandView) Formatter() *OutputFormatter {

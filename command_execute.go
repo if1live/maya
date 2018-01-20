@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/op/go-logging"
@@ -88,13 +89,11 @@ func (c *CommandExecute) RawOutput() []string {
 		elems = append(elems, "$ "+c.Cmd)
 	}
 	elems = append(elems, outputLines...)
+	elems = sanitizeLineFeedMultiLine(elems)
 	return elems
 }
 
-func (c *CommandExecute) ExecuteImmediately() []string {
-	log := logging.MustGetLogger("maya")
-	log.Infof("Command execute: %v", c)
-
+func (c *CommandExecute) executeImmediatelyUnix() []string {
 	tmpfile, err := ioutil.TempFile("", "maya")
 	if err != nil {
 		panic(err)
@@ -107,6 +106,7 @@ func (c *CommandExecute) ExecuteImmediately() []string {
 	if err := tmpfile.Close(); err != nil {
 		panic(err)
 	}
+
 	out, err := exec.Command("bash", tmpfile.Name()).CombinedOutput()
 
 	elems := []string{}
@@ -119,6 +119,33 @@ func (c *CommandExecute) ExecuteImmediately() []string {
 
 	elems = strings.Split(string(out[:]), "\n")
 	return elems
+}
+
+func (c *CommandExecute) executeImmediatelyWindows() []string {
+	// https://groups.google.com/forum/#!topic/golang-nuts/Qtaw8r3Sx68
+	out, err := exec.Command("cmd", "/c", c.Cmd).CombinedOutput()
+	elems := []string{}
+	if err != nil {
+		if _, ok := err.(*exec.Error); ok {
+			elems = append(elems, err.Error())
+			return elems
+		}
+	}
+
+	elems = strings.Split(string(out[:]), "\n")
+	return elems
+}
+
+func (c *CommandExecute) ExecuteImmediately() []string {
+	log := logging.MustGetLogger("maya")
+	log.Infof("Command execute: %v", c)
+
+	switch runtime.GOOS {
+	case "windows":
+		return c.executeImmediatelyWindows()
+	default:
+		return c.executeImmediatelyUnix()
+	}
 }
 
 func (c *CommandExecute) Formatter() *OutputFormatter {

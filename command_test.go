@@ -2,6 +2,7 @@ package main
 
 import (
 	"reflect"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -59,19 +60,23 @@ func TestBoolVal(t *testing.T) {
 
 func TestRawOutpoutCommandExecute(t *testing.T) {
 	cases := []struct {
-		cmd    CommandExecute
-		output []string
+		supportWindows bool
+		cmd            CommandExecute
+		output         []string
 	}{
 		{
+			true,
 			CommandExecute{"echo hello", false, OutputFormatCode},
 			[]string{"hello", ""},
 		},
 		// stderr
 		{
+			false,
 			CommandExecute{"clang", false, OutputFormatCode},
 			[]string{"clang: error: no input files", ""},
 		},
 		{
+			false,
 			CommandExecute{"clang", true, OutputFormatCode},
 			[]string{"$ clang", "clang: error: no input files", ""},
 		},
@@ -83,17 +88,26 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		//},
 		// local path
 		{
+			false,
 			CommandExecute{"./demo.sh", true, OutputFormatCode},
 			[]string{"$ ./demo.sh", "hello-world!", ""},
 		},
 		// complex
 		{
+			false,
 			CommandExecute{"ls | sort | grep \".go\" | head -n 1", false, OutputFormatCode},
 			[]string{"article.go", ""},
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.RawOutput())
+		switch runtime.GOOS {
+		case "windows":
+			if c.supportWindows {
+				assert.Equal(t, c.output, c.cmd.RawOutput())
+			}
+		default:
+			assert.Equal(t, c.output, c.cmd.RawOutput())
+		}
 	}
 }
 

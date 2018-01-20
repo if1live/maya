@@ -1,6 +1,8 @@
 package main
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type Command interface {
 	Formatter() *OutputFormatter
