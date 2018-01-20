@@ -1,28 +1,36 @@
 title: this is title
 subtitle: this is subtitle
-tags: lisp, demo
+tags: python, demo
 author: if1live
 slug: sample-article
 
 ## write article
 
-~~~maya:view
-file=demo.lisp
-lang=lisp
-~~~
+attach text file.
 
 ~~~maya:view
-file=demo.lisp
+file=demo.py
+lang=python
+~~~
+
+attach text file with line number.
+
+~~~maya:view
+file=demo.py
 start_line=0
 end_line=1
-lang=lisp
+lang=python
 ~~~
 
-~~~maya:execute
-cmd=clisp demo.lisp
-~~~
+print stdout/stderr as markdown code format.
 
 ~~~maya:execute
-cmd=clisp demo.lisp
+cmd=python demo.py
+~~~
+
+print stdout/stderr as markdown blockquote format.
+
+~~~maya:execute
+cmd=python demo.py
 format=blockquote
 ~~~
