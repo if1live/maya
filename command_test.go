@@ -72,13 +72,13 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		// stderr
 		{
 			false,
-			CommandExecute{"clang", false, OutputFormatCode},
-			[]string{"clang: error: no input files", ""},
+			CommandExecute{"rm not_exist_file", false, OutputFormatCode},
+			[]string{"rm: cannot remove 'not_exist_file': No such file or directory", ""},
 		},
 		{
 			false,
-			CommandExecute{"clang", true, OutputFormatCode},
-			[]string{"$ clang", "clang: error: no input files", ""},
+			CommandExecute{"rm not_exist_file", true, OutputFormatCode},
+			[]string{"$ rm not_exist_file", "rm: cannot remove 'not_exist_file': No such file or directory", ""},
 		},
 		// command not exist
 		// 임시폴더를 쓰기때문에 임의의 경로가 나온다
