@@ -128,19 +128,27 @@ slug: sample-article
 
 ## write article
 
+attach text file.
+
 ```python
 def sample():
     print("hello, world")
 sample()
 ```
 
+attach text file with line number.
+
 ```python
 def sample():
 ```
 
+print stdout/stderr as markdown code format.
+
 ```bash
 hello, world
 ```
+
+print stdout/stderr as markdown blockquote format.
 
 > hello, world
 >
