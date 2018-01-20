@@ -72,13 +72,13 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		// stderr
 		{
 			false,
-			CommandExecute{"rm not_exist_file", false, OutputFormatCode},
-			[]string{"rm: cannot remove 'not_exist_file': No such file or directory", ""},
+			CommandExecute{"./demo_stderr.py", false, OutputFormatCode},
+			[]string{"this is stderr", ""},
 		},
 		{
 			false,
-			CommandExecute{"rm not_exist_file", true, OutputFormatCode},
-			[]string{"$ rm not_exist_file", "rm: cannot remove 'not_exist_file': No such file or directory", ""},
+			CommandExecute{"./demo_stderr.py", true, OutputFormatCode},
+			[]string{"$ ./demo_stderr.py", "this is stderr", ""},
 		},
 		// command not exist
 		// 임시폴더를 쓰기때문에 임의의 경로가 나온다
