@@ -16,5 +16,9 @@ script:
   - gocov test ./... -covermode count > gocov.json
   - goveralls -service=travis-ci
 
+  - cd maya-cli
+  - go build -v
+  - cd ..
+
 notifications:
   email: false

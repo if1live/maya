@@ -1,5 +1,5 @@
 #!/bin/bash
 
-go build
+cd maya-cli; go build cd ..
 rm -rf cache
-./maya -mode=empty -file=README.tpl.md > README.md
+./maya-cli/maya-cli -mode=empty -file=README.tpl.md > README.md

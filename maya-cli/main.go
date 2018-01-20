@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/if1live/maya"
 	"github.com/op/go-logging"
 )
 
@@ -49,6 +50,6 @@ func main() {
 		defer outfile.Close()
 	}
 
-	article := NewArticleFromReader(infile, _mode)
+	article := maya.NewArticleFromReader(infile, _mode)
 	article.Output(outfile)
 }

@@ -1,4 +1,4 @@
-package main
+package maya
 
 import "github.com/op/go-logging"
 
