@@ -54,8 +54,34 @@ Embedding command line output into markdown is bothering task. Maya execute comm
 
 ## Install
 
+### Library
+
+```bash
+go get -u github.com/if1live/maya
+```
+
+source
+
+~~~maya:view
+file=examples/simple/main.go
+lang=golang
+format=code
+~~~
+
+output
+
+~~~maya:execute
+cmd=go run examples/simple/main.go
+format=code
+~~~
+
+
+### Command line tool
+
 ```bash
 go install github.com/if1live/maya/maya-cli
+
+maya-cli -mode=pelican -file=demo.md
 ```
 
 ## Usage
