@@ -2,17 +2,17 @@ package maya
 
 import "github.com/op/go-logging"
 
-type CommandUnknown struct {
+type cmdUnknown struct {
 	Action string
 }
 
-func NewCommandUnknown(action string, args *CommandArguments) Command {
-	return &CommandUnknown{
+func newCmdUnknown(action string, args *cmdArgs) cmd {
+	return &cmdUnknown{
 		Action: action,
 	}
 }
 
-func (c *CommandUnknown) RawOutput() []string {
+func (c *cmdUnknown) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Warningf("Command Unknown: %v", c)
 	tokens := []string{
@@ -21,7 +21,7 @@ func (c *CommandUnknown) RawOutput() []string {
 	return tokens
 }
 
-func (c *CommandUnknown) execute() string {
+func (c *cmdUnknown) execute() string {
 	f := newFormatter(formatBlockquote)
 	return f.format(c.RawOutput())
 }

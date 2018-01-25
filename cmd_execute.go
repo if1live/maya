@@ -13,45 +13,45 @@ import (
 	"github.com/op/go-logging"
 )
 
-type CommandExecute struct {
-	Cmd       string
-	AttachCmd bool
-	Format    string
+type cmdExecute struct {
+	cmd       string
+	attachCmd bool
+	format    string
 }
 
-func NewCommandExecute(action string, args *CommandArguments) Command {
-	return &CommandExecute{
-		Cmd:       args.StringVal("cmd", "echo empty"),
-		AttachCmd: args.BoolVal("attach_cmd", false),
-		Format:    args.StringVal("format", formatCode),
+func newCmdExecute(action string, args *cmdArgs) cmd {
+	return &cmdExecute{
+		cmd:       args.stringVal("cmd", "echo empty"),
+		attachCmd: args.boolVal("attach_cmd", false),
+		format:    args.stringVal("format", formatCode),
 	}
 }
 
-func (c *CommandExecute) cacheFileName() string {
-	data := []byte(c.Cmd)
+func (c *cmdExecute) cacheFileName() string {
+	data := []byte(c.cmd)
 	return fmt.Sprintf("%x.txt", md5.Sum(data))
 }
 
-func (c *CommandExecute) cacheDir() string {
+func (c *cmdExecute) cacheDir() string {
 	// 실행 경로를 캐시 생성 경로로 이용
 	pwd, _ := os.Getwd()
 	cachePath := filepath.Join(pwd, "cache")
 	return cachePath
 }
 
-func (c *CommandExecute) cacheFilePath() string {
+func (c *cmdExecute) cacheFilePath() string {
 	dir := c.cacheDir()
 	filename := c.cacheFileName()
 	os.MkdirAll(dir, 0755)
 	return filepath.Join(dir, filename)
 }
 
-func (c *CommandExecute) cacheExists() bool {
+func (c *cmdExecute) cacheExists() bool {
 	_, err := os.Stat(c.cacheFilePath())
 	return !os.IsNotExist(err)
 }
 
-func (c *CommandExecute) readCache() []string {
+func (c *cmdExecute) readCache() []string {
 	data, _ := ioutil.ReadFile(c.cacheFilePath())
 	text := string(data[:])
 	lines := strings.Split(text, "\n")
@@ -65,9 +65,9 @@ func (c *CommandExecute) readCache() []string {
 	return retval
 }
 
-func (c *CommandExecute) writeCache(lines []string) bool {
+func (c *cmdExecute) writeCache(lines []string) bool {
 	cacheLines := []string{
-		"# " + c.Cmd,
+		"# " + c.cmd,
 	}
 	cacheLines = append(cacheLines, lines...)
 	data := []byte(strings.Join(cacheLines, "\n"))
@@ -75,7 +75,7 @@ func (c *CommandExecute) writeCache(lines []string) bool {
 	return true
 }
 
-func (c *CommandExecute) RawOutput() []string {
+func (c *cmdExecute) RawOutput() []string {
 	outputLines := []string{}
 	if c.cacheExists() {
 		outputLines = c.readCache()
@@ -85,22 +85,22 @@ func (c *CommandExecute) RawOutput() []string {
 	}
 
 	elems := []string{}
-	if c.AttachCmd {
-		elems = append(elems, "$ "+c.Cmd)
+	if c.attachCmd {
+		elems = append(elems, "$ "+c.cmd)
 	}
 	elems = append(elems, outputLines...)
 	elems = sanitizeLineFeedMultiLine(elems)
 	return elems
 }
 
-func (c *CommandExecute) executeImmediatelyUnix() []string {
+func (c *cmdExecute) executeImmediatelyUnix() []string {
 	tmpfile, err := ioutil.TempFile("", "maya")
 	if err != nil {
 		panic(err)
 	}
 	defer os.Remove(tmpfile.Name())
 
-	if _, err := tmpfile.Write([]byte(c.Cmd)); err != nil {
+	if _, err := tmpfile.Write([]byte(c.cmd)); err != nil {
 		panic(err)
 	}
 	if err := tmpfile.Close(); err != nil {
@@ -121,9 +121,9 @@ func (c *CommandExecute) executeImmediatelyUnix() []string {
 	return elems
 }
 
-func (c *CommandExecute) executeImmediatelyWindows() []string {
+func (c *cmdExecute) executeImmediatelyWindows() []string {
 	// https://groups.google.com/forum/#!topic/golang-nuts/Qtaw8r3Sx68
-	out, err := exec.Command("cmd", "/c", c.Cmd).CombinedOutput()
+	out, err := exec.Command("cmd", "/c", c.cmd).CombinedOutput()
 	elems := []string{}
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok {
@@ -136,7 +136,7 @@ func (c *CommandExecute) executeImmediatelyWindows() []string {
 	return elems
 }
 
-func (c *CommandExecute) ExecuteImmediately() []string {
+func (c *cmdExecute) ExecuteImmediately() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command execute: %v", c)
 
@@ -148,7 +148,7 @@ func (c *CommandExecute) ExecuteImmediately() []string {
 	}
 }
 
-func (c *CommandExecute) execute() string {
-	f := newFormatter(c.Format)
+func (c *cmdExecute) execute() string {
+	f := newFormatter(c.format)
 	return f.format(c.RawOutput(), "bash")
 }

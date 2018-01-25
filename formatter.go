@@ -11,7 +11,7 @@ const (
 	formatText       = "text"
 )
 
-type Formatter interface {
+type formatter interface {
 	format(lines []string, args ...string) string
 }
 
@@ -21,7 +21,7 @@ func format(format string, text string, args ...string) string {
 	return f.format(lines, args...)
 }
 
-func newFormatter(format string) Formatter {
+func newFormatter(format string) formatter {
 	switch format {
 	case formatCode:
 		return &codeFormatter{}

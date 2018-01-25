@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIntVal(t *testing.T) {
+func Test_commandArgs_intVal(t *testing.T) {
 	cases := []struct {
 		params     map[string]string
 		key        string
@@ -20,12 +20,12 @@ func TestIntVal(t *testing.T) {
 		{map[string]string{"key": "invalid"}, "key", 1, 1},
 	}
 	for _, c := range cases {
-		ca := CommandArguments{c.params}
-		assert.Equal(t, c.expected, ca.IntVal(c.key, c.defaultVal))
+		ca := cmdArgs{c.params}
+		assert.Equal(t, c.expected, ca.intVal(c.key, c.defaultVal))
 	}
 }
 
-func TestStringVal(t *testing.T) {
+func Test_commandArgs_stringVal(t *testing.T) {
 	cases := []struct {
 		params     map[string]string
 		key        string
@@ -36,12 +36,12 @@ func TestStringVal(t *testing.T) {
 		{map[string]string{"key": "123"}, "not-exist", "default", "default"},
 	}
 	for _, c := range cases {
-		ca := CommandArguments{c.params}
-		assert.Equal(t, c.expected, ca.StringVal(c.key, c.defaultVal))
+		ca := cmdArgs{c.params}
+		assert.Equal(t, c.expected, ca.stringVal(c.key, c.defaultVal))
 	}
 }
 
-func TestBoolVal(t *testing.T) {
+func Test_CommandArgs_boolVal(t *testing.T) {
 	cases := []struct {
 		params     map[string]string
 		key        string
@@ -50,34 +50,39 @@ func TestBoolVal(t *testing.T) {
 	}{
 		{map[string]string{"key": "123"}, "key", true, true},
 		{map[string]string{"key": "123"}, "not-exist", true, true},
+
 		{map[string]string{"key": "false"}, "key", true, false},
+		{map[string]string{"key": "FaLsE"}, "key", true, false},
+
+		{map[string]string{"key": "TrUe"}, "key", false, true},
+		{map[string]string{"key": "t"}, "key", false, true},
 	}
 	for _, c := range cases {
-		ca := CommandArguments{c.params}
-		assert.Equal(t, c.expected, ca.BoolVal(c.key, c.defaultVal))
+		ca := cmdArgs{c.params}
+		assert.Equal(t, c.expected, ca.boolVal(c.key, c.defaultVal))
 	}
 }
 
 func TestRawOutpoutCommandExecute(t *testing.T) {
 	cases := []struct {
 		supportWindows bool
-		cmd            CommandExecute
+		cmd            cmdExecute
 		output         []string
 	}{
 		{
 			true,
-			CommandExecute{"echo hello", false, formatCode},
+			cmdExecute{"echo hello", false, formatCode},
 			[]string{"hello", ""},
 		},
 		// stderr
 		{
 			false,
-			CommandExecute{"./demo_stderr.py", false, formatCode},
+			cmdExecute{"./demo_stderr.py", false, formatCode},
 			[]string{"this is stderr", ""},
 		},
 		{
 			false,
-			CommandExecute{"./demo_stderr.py", true, formatCode},
+			cmdExecute{"./demo_stderr.py", true, formatCode},
 			[]string{"$ ./demo_stderr.py", "this is stderr", ""},
 		},
 		// command not exist
@@ -89,13 +94,13 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		// local path
 		{
 			false,
-			CommandExecute{"./demo.sh", true, formatCode},
+			cmdExecute{"./demo.sh", true, formatCode},
 			[]string{"$ ./demo.sh", "hello-world!", ""},
 		},
 		// complex
 		{
 			false,
-			CommandExecute{"ls | sort | grep \".go\" | head -n 1", false, formatCode},
+			cmdExecute{"ls | sort | grep \".go\" | head -n 1", false, formatCode},
 			[]string{"article.go", ""},
 		},
 	}
@@ -113,15 +118,15 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 
 func TestRawOutputCommandView(t *testing.T) {
 	cases := []struct {
-		cmd    CommandView
+		cmd    cmdView
 		output []string
 	}{
 		{
-			CommandView{
-				FilePath:  "command_test.go",
-				StartLine: 1,
-				EndLine:   3,
-				Format:    formatCode,
+			cmdView{
+				filePath:  "cmd_test.go",
+				startLine: 1,
+				endLine:   3,
+				format:    formatCode,
 			},
 			[]string{"", "import ("},
 		},
@@ -133,11 +138,11 @@ func TestRawOutputCommandView(t *testing.T) {
 
 func TestRawOutputCommandUnknown(t *testing.T) {
 	cases := []struct {
-		cmd    CommandUnknown
+		cmd    cmdUnknown
 		output []string
 	}{
 		{
-			CommandUnknown{"foo"},
+			cmdUnknown{"foo"},
 			[]string{"Action=foo"},
 		},
 	}
@@ -148,68 +153,68 @@ func TestRawOutputCommandUnknown(t *testing.T) {
 
 func TestNewCommand(t *testing.T) {
 	cases := []struct {
-		actual   Command
-		expected Command
+		actual   cmd
+		expected cmd
 	}{
 		{
-			NewCommand("view", &CommandArguments{map[string]string{"file": "hello.txt"}}),
-			&CommandView{"hello.txt", 0, 0, "txt", formatCode},
+			newCmd("view", &cmdArgs{map[string]string{"file": "hello.txt"}}),
+			&cmdView{"hello.txt", 0, 0, "txt", formatCode},
 		},
 		{
-			NewCommand("view", &CommandArguments{map[string]string{
+			newCmd("view", &cmdArgs{map[string]string{
 				"file":       "foo.txt",
 				"start_line": "1",
 				"end_line":   "10",
 				"format":     "blockquote",
 			}}),
-			&CommandView{"foo.txt", 1, 10, "txt", formatBlockquote},
+			&cmdView{"foo.txt", 1, 10, "txt", formatBlockquote},
 		},
 		{
-			NewCommand("view", &CommandArguments{map[string]string{
+			newCmd("view", &cmdArgs{map[string]string{
 				"file": "hello.txt",
 				"lang": "lisp",
 			}}),
-			&CommandView{"hello.txt", 0, 0, "lisp", formatCode},
+			&cmdView{"hello.txt", 0, 0, "lisp", formatCode},
 		},
 		{
-			NewCommand("execute", &CommandArguments{map[string]string{
+			newCmd("execute", &cmdArgs{map[string]string{
 				"cmd": "echo hello",
 			}}),
-			&CommandExecute{"echo hello", false, formatCode},
+			&cmdExecute{"echo hello", false, formatCode},
 		},
 		{
-			NewCommand("execute", &CommandArguments{map[string]string{
+			newCmd("execute", &cmdArgs{map[string]string{
 				"cmd":    "echo hello",
 				"format": "blockquote",
 			}}),
-			&CommandExecute{"echo hello", false, formatBlockquote},
+			&cmdExecute{"echo hello", false, formatBlockquote},
 		},
 		{
-			NewCommand("execute", &CommandArguments{map[string]string{
+			newCmd("execute", &cmdArgs{map[string]string{
 				"cmd":        "echo hello",
 				"format":     "blockquote",
 				"attach_cmd": "t",
 			}}),
-			&CommandExecute{"echo hello", true, formatBlockquote},
+			&cmdExecute{"echo hello", true, formatBlockquote},
 		},
 		{
-			NewCommand("youtube", &CommandArguments{map[string]string{
+			newCmd("youtube", &cmdArgs{map[string]string{
 				"video_id": "id",
 				"width":    "480",
 				"height":   "320",
 			}}),
-			&CommandYoutube{"id", 480, 320},
+			&cmdYoutube{"id", 480, 320},
 		},
 		{
-			NewCommand("gist", &CommandArguments{map[string]string{
+			newCmd("gist", &cmdArgs{map[string]string{
 				"id":   "3254906",
 				"file": "brew-update-notifier.sh",
 			}}),
-			&CommandGist{"3254906", "brew-update-notifier.sh"},
+			&cmdGist{"3254906", "brew-update-notifier.sh"},
 		},
 		{
-			NewCommand("hello", &CommandArguments{map[string]string{"key": "value"}}),
-			&CommandUnknown{"hello"},
+			newCmd("hello", &cmdArgs{map[string]string{"key": "value"}}),
+			&cmdUnknown{"hello"},
 		},
 	}
 	for _, c := range cases {
