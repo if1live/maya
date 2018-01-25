@@ -66,18 +66,18 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 	}{
 		{
 			true,
-			CommandExecute{"echo hello", false, OutputFormatCode},
+			CommandExecute{"echo hello", false, formatCode},
 			[]string{"hello", ""},
 		},
 		// stderr
 		{
 			false,
-			CommandExecute{"./demo_stderr.py", false, OutputFormatCode},
+			CommandExecute{"./demo_stderr.py", false, formatCode},
 			[]string{"this is stderr", ""},
 		},
 		{
 			false,
-			CommandExecute{"./demo_stderr.py", true, OutputFormatCode},
+			CommandExecute{"./demo_stderr.py", true, formatCode},
 			[]string{"$ ./demo_stderr.py", "this is stderr", ""},
 		},
 		// command not exist
@@ -89,13 +89,13 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		// local path
 		{
 			false,
-			CommandExecute{"./demo.sh", true, OutputFormatCode},
+			CommandExecute{"./demo.sh", true, formatCode},
 			[]string{"$ ./demo.sh", "hello-world!", ""},
 		},
 		// complex
 		{
 			false,
-			CommandExecute{"ls | sort | grep \".go\" | head -n 1", false, OutputFormatCode},
+			CommandExecute{"ls | sort | grep \".go\" | head -n 1", false, formatCode},
 			[]string{"article.go", ""},
 		},
 	}
@@ -121,7 +121,7 @@ func TestRawOutputCommandView(t *testing.T) {
 				FilePath:  "command_test.go",
 				StartLine: 1,
 				EndLine:   3,
-				Format:    OutputFormatCode,
+				Format:    formatCode,
 			},
 			[]string{"", "import ("},
 		},
@@ -153,7 +153,7 @@ func TestNewCommand(t *testing.T) {
 	}{
 		{
 			NewCommand("view", &CommandArguments{map[string]string{"file": "hello.txt"}}),
-			&CommandView{"hello.txt", 0, 0, "txt", OutputFormatCode},
+			&CommandView{"hello.txt", 0, 0, "txt", formatCode},
 		},
 		{
 			NewCommand("view", &CommandArguments{map[string]string{
@@ -162,27 +162,27 @@ func TestNewCommand(t *testing.T) {
 				"end_line":   "10",
 				"format":     "blockquote",
 			}}),
-			&CommandView{"foo.txt", 1, 10, "txt", OutputFormatBlockquote},
+			&CommandView{"foo.txt", 1, 10, "txt", formatBlockquote},
 		},
 		{
 			NewCommand("view", &CommandArguments{map[string]string{
 				"file": "hello.txt",
 				"lang": "lisp",
 			}}),
-			&CommandView{"hello.txt", 0, 0, "lisp", OutputFormatCode},
+			&CommandView{"hello.txt", 0, 0, "lisp", formatCode},
 		},
 		{
 			NewCommand("execute", &CommandArguments{map[string]string{
 				"cmd": "echo hello",
 			}}),
-			&CommandExecute{"echo hello", false, OutputFormatCode},
+			&CommandExecute{"echo hello", false, formatCode},
 		},
 		{
 			NewCommand("execute", &CommandArguments{map[string]string{
 				"cmd":    "echo hello",
 				"format": "blockquote",
 			}}),
-			&CommandExecute{"echo hello", false, OutputFormatBlockquote},
+			&CommandExecute{"echo hello", false, formatBlockquote},
 		},
 		{
 			NewCommand("execute", &CommandArguments{map[string]string{
@@ -190,7 +190,7 @@ func TestNewCommand(t *testing.T) {
 				"format":     "blockquote",
 				"attach_cmd": "t",
 			}}),
-			&CommandExecute{"echo hello", true, OutputFormatBlockquote},
+			&CommandExecute{"echo hello", true, formatBlockquote},
 		},
 		{
 			NewCommand("youtube", &CommandArguments{map[string]string{

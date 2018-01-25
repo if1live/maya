@@ -1,76 +1,105 @@
 package maya
 
-import "strings"
-
-const (
-	OutputFormatCode       = "code"
-	OutputFormatBlockquote = "blockquote"
-	OutputFormatBold       = "bold"
-	OutputFormatText       = "text"
+import (
+	"strings"
 )
 
-type OutputFormatter struct {
-	format string
+const (
+	formatCode       = "code"
+	formatBlockquote = "blockquote"
+	formatBold       = "bold"
+	formatText       = "text"
+)
+
+type Formatter interface {
+	format(lines []string, args ...string) string
 }
 
-func (f *OutputFormatter) Format(lines []string, args ...string) string {
-	if len(lines) == 0 {
-		return ""
-	}
+func format(format string, text string, args ...string) string {
+	f := newFormatter(format)
+	lines := strings.Split(text, "\n")
+	return f.format(lines, args...)
+}
 
-	switch f.format {
-	case OutputFormatCode:
-		lang := ""
-		if len(args) > 0 {
-			lang = args[0]
-		}
-		return f.formatCode(lines, lang)
-	case OutputFormatBlockquote:
-		return f.formatBlockquote(lines)
-	case OutputFormatBold:
-		return f.formatBold(lines)
-	case OutputFormatText:
-		return f.formatText(lines)
+func newFormatter(format string) Formatter {
+	switch format {
+	case formatCode:
+		return &codeFormatter{}
+	case formatBlockquote:
+		return &blockquoteFormatter{}
+	case formatBold:
+		return &boldFormatter{}
+	case formatText:
+		return &textFormatter{}
 	default:
-		msg := "unknown format : " + f.format
+		msg := "unknown format : " + format
 		panic(msg)
 	}
-	return ""
 }
 
-func (f *OutputFormatter) formatCode(lines []string, lang string) string {
-	headLine := "```" + f.convertLanguage(lang)
-	tailLine := "```"
+type codeFormatter struct{}
 
-	if lines[len(lines)-1] == "" {
-		lines = lines[:len(lines)-1]
+func (f *codeFormatter) getLanguage(args ...string) string {
+	lang := ""
+	if len(args) > 0 {
+		lang = args[0]
 	}
-
-	contents := make([]string, len(lines)+2)
-	contents[0] = headLine
-	for i, line := range lines {
-		contents[i+1] = line
-	}
-	contents[len(contents)-1] = tailLine
-	return strings.Join(contents, "\n")
+	return f.convertLanguage(lang)
 }
 
-func (f *OutputFormatter) convertLanguage(lang string) string {
+func (f *codeFormatter) convertLanguage(lang string) string {
 	table := map[string]string{
 		"cs": "csharp",
 		"py": "python",
 		"rb": "ruby",
 	}
 
-	found := table[lang]
-	if found != "" {
+	found, ok := table[lang]
+	if ok {
 		return found
-	} else {
-		return lang
 	}
+	return lang
 }
 
-func (f *OutputFormatter) formatBlockquote(lines []string) string {
+func (f *codeFormatter) format(lines []string, args ...string) string {
+	lang := f.getLanguage(args...)
+	headLine := "```" + lang
+	tailLine := "```"
+
+	if len(lines) == 0 {
+		return strings.Join([]string{headLine, tailLine}, "\n")
+	}
+
+	isBlankLine := func(line string) bool {
+		return strings.Trim(line, "\t\r ") == ""
+	}
+
+	startIdx := 0
+	for i := 0; i < len(lines); i++ {
+		if !isBlankLine(lines[i]) {
+			startIdx = i
+			break
+		}
+	}
+
+	endIdx := len(lines) - 1
+	for i := len(lines) - 1; i >= 0; i-- {
+		if !isBlankLine(lines[i]) {
+			endIdx = i
+			break
+		}
+	}
+
+	newLines := []string{}
+	newLines = append(newLines, headLine)
+	newLines = append(newLines, lines[startIdx:endIdx+1]...)
+	newLines = append(newLines, tailLine)
+	return strings.Join(newLines, "\n")
+}
+
+type blockquoteFormatter struct{}
+
+func (f *blockquoteFormatter) format(lines []string, args ...string) string {
 	contents := make([]string, len(lines)*2-1)
 	for i, line := range lines {
 		contents[i*2+0] = "> " + line
@@ -84,7 +113,9 @@ func (f *OutputFormatter) formatBlockquote(lines []string) string {
 	return strings.Join(contents, "\n")
 }
 
-func (f *OutputFormatter) formatBold(lines []string) string {
+type boldFormatter struct{}
+
+func (f *boldFormatter) format(lines []string, argss ...string) string {
 	contents := make([]string, len(lines))
 	for i, line := range lines {
 		contents[i] = "**" + line + "**"
@@ -92,11 +123,8 @@ func (f *OutputFormatter) formatBold(lines []string) string {
 	return strings.Join(contents, "\n")
 }
 
-func (f *OutputFormatter) formatText(lines []string) string {
-	return strings.Join(lines, "\n")
-}
+type textFormatter struct{}
 
-func (f *OutputFormatter) Run(text string, args ...string) string {
-	lines := strings.Split(text, "\n")
-	return f.Format(lines, args...)
+func (f *textFormatter) format(lines []string, args ...string) string {
+	return strings.Join(lines, "\n")
 }

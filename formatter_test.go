@@ -6,88 +6,100 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFormat(t *testing.T) {
+func Test_codeFormatter_format(t *testing.T) {
 	cases := []struct {
-		format string
 		lines  []string
 		args   []string
 		output string
 	}{
-		{OutputFormatCode, []string{}, []string{}, ""},
+		{[]string{}, []string{}, "```\n```"},
 		{
-			OutputFormatCode,
 			[]string{"hello", "world"},
 			[]string{},
 			"```\nhello\nworld\n```",
 		},
 		{
-			OutputFormatCode,
-			[]string{"hello", "world", ""},
+			[]string{"", "", "hello", "world", "", ""},
 			[]string{},
 			"```\nhello\nworld\n```",
 		},
 		{
-			OutputFormatCode,
 			[]string{"hello", "", "world"},
 			[]string{},
 			"```\nhello\n\nworld\n```",
 		},
 		{
-			OutputFormatCode,
 			[]string{"hello", "world"},
 			[]string{"python"},
 			"```python\nhello\nworld\n```",
 		},
 		{
-			OutputFormatCode,
 			[]string{"hello", "world"},
 			[]string{"py"},
 			"```python\nhello\nworld\n```",
 		},
+	}
+	for _, c := range cases {
+		f := codeFormatter{}
+		assert.Equal(t, c.output, f.format(c.lines, c.args...))
+	}
+}
+
+func Test_blockquoteFormatter_format(t *testing.T) {
+	cases := []struct {
+		lines  []string
+		args   []string
+		output string
+	}{
 		{
-			OutputFormatBlockquote,
 			[]string{"hello", "world"},
 			[]string{},
 			"> hello\n>\n> world",
 		},
 		{
-			OutputFormatBlockquote,
 			[]string{"hello", "", "world"},
 			[]string{},
 			"> hello\n>\n>\n>\n> world",
 		},
+	}
+	for _, c := range cases {
+		f := blockquoteFormatter{}
+		assert.Equal(t, c.output, f.format(c.lines, c.args...))
+	}
+}
+
+func Test_textFormatter_format(t *testing.T) {
+	cases := []struct {
+		lines  []string
+		args   []string
+		output string
+	}{
 		{
-			OutputFormatBold,
-			[]string{"hello", "world"},
-			[]string{},
-			"**hello**\n**world**",
-		},
-		{
-			OutputFormatText,
 			[]string{"hello", "world"},
 			[]string{},
 			"hello\nworld",
 		},
 	}
 	for _, c := range cases {
-		f := OutputFormatter{c.format}
-		assert.Equal(t, c.output, f.Format(c.lines, c.args...))
+		f := textFormatter{}
+		assert.Equal(t, c.output, f.format(c.lines, c.args...))
 	}
 }
 
-func Test_convertLanguage(t *testing.T) {
+func Test_boldFormatter_format(t *testing.T) {
 	cases := []struct {
-		in  string
-		out string
+		lines  []string
+		args   []string
+		output string
 	}{
-		{"py", "python"},
-		{"python", "python"},
-		{"", ""},
-		{"asdf", "asdf"},
+		{
+			[]string{"hello", "world"},
+			[]string{},
+			"**hello**\n**world**",
+		},
 	}
-
-	f := OutputFormatter{OutputFormatCode}
 	for _, c := range cases {
-		assert.Equal(t, c.out, f.convertLanguage(c.in))
+		f := boldFormatter{}
+		assert.Equal(t, c.output, f.format(c.lines, c.args...))
 	}
 }

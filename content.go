@@ -31,7 +31,7 @@ func (cb *ContentBlock) Lines() []string {
 		params[key] = value
 	}
 	cmd := NewCommand(cb.command, &CommandArguments{params})
-	return []string{cmd.Execute()}
+	return []string{cmd.execute()}
 }
 
 func NewContent(text string) *ArticleContent {

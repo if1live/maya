@@ -16,10 +16,6 @@ func NewCommandYoutube(action string, args *CommandArguments) Command {
 	}
 }
 
-func (c *CommandYoutube) Formatter() *OutputFormatter {
-	return &OutputFormatter{OutputFormatText}
-}
-
 func (c *CommandYoutube) RawOutput() []string {
 	return []string{
 		`<div class="maya-youtube">`,
@@ -28,6 +24,7 @@ func (c *CommandYoutube) RawOutput() []string {
 	}
 }
 
-func (c *CommandYoutube) Execute() string {
-	return c.Formatter().Format(c.RawOutput())
+func (c *CommandYoutube) execute() string {
+	f := newFormatter(formatText)
+	return f.format(c.RawOutput())
 }

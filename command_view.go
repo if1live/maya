@@ -26,7 +26,7 @@ func NewCommandView(action string, args *CommandArguments) Command {
 		StartLine: args.IntVal("start_line", 0),
 		EndLine:   args.IntVal("end_line", 0),
 		Language:  language,
-		Format:    args.StringVal("format", OutputFormatCode),
+		Format:    args.StringVal("format", formatCode),
 	}
 }
 
@@ -48,11 +48,7 @@ func (c *CommandView) RawOutput() []string {
 	return elems
 }
 
-func (c *CommandView) Formatter() *OutputFormatter {
-	return &OutputFormatter{c.Format}
-}
-
-func (c *CommandView) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput(), c.Language)
+func (c *CommandView) execute() string {
+	f := newFormatter(c.Format)
+	return f.format(c.RawOutput(), c.Language)
 }

@@ -23,7 +23,7 @@ func NewCommandExecute(action string, args *CommandArguments) Command {
 	return &CommandExecute{
 		Cmd:       args.StringVal("cmd", "echo empty"),
 		AttachCmd: args.BoolVal("attach_cmd", false),
-		Format:    args.StringVal("format", OutputFormatCode),
+		Format:    args.StringVal("format", formatCode),
 	}
 }
 
@@ -148,11 +148,7 @@ func (c *CommandExecute) ExecuteImmediately() []string {
 	}
 }
 
-func (c *CommandExecute) Formatter() *OutputFormatter {
-	return &OutputFormatter{c.Format}
-}
-
-func (c *CommandExecute) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput(), "bash")
+func (c *CommandExecute) execute() string {
+	f := newFormatter(c.Format)
+	return f.format(c.RawOutput(), "bash")
 }

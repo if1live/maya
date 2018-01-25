@@ -14,10 +14,6 @@ func NewCommandGist(action string, args *CommandArguments) Command {
 	}
 }
 
-func (c *CommandGist) Formatter() *OutputFormatter {
-	return &OutputFormatter{OutputFormatText}
-}
-
 func (c *CommandGist) RawOutput() []string {
 	url := fmt.Sprintf("https://gist.github.com/%s.js", c.Id)
 	if c.File != "" {
@@ -30,6 +26,7 @@ func (c *CommandGist) RawOutput() []string {
 	}
 }
 
-func (c *CommandGist) Execute() string {
-	return c.Formatter().Format(c.RawOutput())
+func (c *CommandGist) execute() string {
+	f := newFormatter(formatText)
+	return f.format(c.RawOutput())
 }

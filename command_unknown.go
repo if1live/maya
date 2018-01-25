@@ -20,11 +20,8 @@ func (c *CommandUnknown) RawOutput() []string {
 	}
 	return tokens
 }
-func (c *CommandUnknown) Formatter() *OutputFormatter {
-	return &OutputFormatter{OutputFormatBlockquote}
-}
 
-func (c *CommandUnknown) Execute() string {
-	formatter := c.Formatter()
-	return formatter.Format(c.RawOutput())
+func (c *CommandUnknown) execute() string {
+	f := newFormatter(formatBlockquote)
+	return f.format(c.RawOutput())
 }
