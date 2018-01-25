@@ -123,10 +123,10 @@ func TestRawOutputCommandView(t *testing.T) {
 	}{
 		{
 			cmdView{
-				filePath:  "cmd_test.go",
-				startLine: 1,
-				endLine:   3,
-				format:    formatCode,
+				FilePath:  "cmd_test.go",
+				StartLine: 1,
+				EndLine:   3,
+				Format:    formatCode,
 			},
 			[]string{"", "import ("},
 		},
@@ -151,7 +151,48 @@ func TestRawOutputCommandUnknown(t *testing.T) {
 	}
 }
 
-func TestNewCommand(t *testing.T) {
+func Test_cmdGist(t *testing.T) {
+	cases := []struct {
+		actual   cmd
+		expected cmd
+	}{
+		{
+			newCmdGist("gist", &cmdArgs{map[string]string{
+				"id":   "3254906",
+				"file": "brew-update-notifier.sh",
+			}}),
+			&cmdGist{"3254906", "brew-update-notifier.sh"},
+		},
+	}
+	for _, c := range cases {
+		if !reflect.DeepEqual(c.actual, c.expected) {
+			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+		}
+	}
+}
+
+func Test_cmdYoutube(t *testing.T) {
+	cases := []struct {
+		actual   cmd
+		expected cmd
+	}{
+		{
+			newCmd("youtube", &cmdArgs{map[string]string{
+				"video_id": "id",
+				"width":    "480",
+				"height":   "320",
+			}}),
+			&cmdYoutube{"id", 480, 320},
+		},
+	}
+	for _, c := range cases {
+		if !reflect.DeepEqual(c.actual, c.expected) {
+			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+		}
+	}
+}
+
+func Test_cmdView(t *testing.T) {
 	cases := []struct {
 		actual   cmd
 		expected cmd
@@ -176,6 +217,19 @@ func TestNewCommand(t *testing.T) {
 			}}),
 			&cmdView{"hello.txt", 0, 0, "lisp", formatCode},
 		},
+	}
+	for _, c := range cases {
+		if !reflect.DeepEqual(c.actual, c.expected) {
+			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+		}
+	}
+}
+
+func Test_cmdExecute(t *testing.T) {
+	cases := []struct {
+		actual   cmd
+		expected cmd
+	}{
 		{
 			newCmd("execute", &cmdArgs{map[string]string{
 				"cmd": "echo hello",
@@ -197,21 +251,20 @@ func TestNewCommand(t *testing.T) {
 			}}),
 			&cmdExecute{"echo hello", true, formatBlockquote},
 		},
-		{
-			newCmd("youtube", &cmdArgs{map[string]string{
-				"video_id": "id",
-				"width":    "480",
-				"height":   "320",
-			}}),
-			&cmdYoutube{"id", 480, 320},
-		},
-		{
-			newCmd("gist", &cmdArgs{map[string]string{
-				"id":   "3254906",
-				"file": "brew-update-notifier.sh",
-			}}),
-			&cmdGist{"3254906", "brew-update-notifier.sh"},
-		},
+	}
+	for _, c := range cases {
+		if !reflect.DeepEqual(c.actual, c.expected) {
+			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+		}
+	}
+
+}
+
+func TestNewCommand(t *testing.T) {
+	cases := []struct {
+		actual   cmd
+		expected cmd
+	}{
 		{
 			newCmd("hello", &cmdArgs{map[string]string{"key": "value"}}),
 			&cmdUnknown{"hello"},

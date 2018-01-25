@@ -3,23 +3,19 @@ package maya
 import "fmt"
 
 type cmdYoutube struct {
-	videoId string
-	width   int
-	height  int
+	VideoId string `maya:"video_id"`
+	Width   int    `maya:"width,640"`
+	Height  int    `maya:"height,480"`
 }
 
 func newCommandYoutube(action string, args *cmdArgs) cmd {
-	return &cmdYoutube{
-		videoId: args.stringVal("video_id", ""),
-		width:   args.intVal("width", 640),
-		height:  args.intVal("height", 480),
-	}
+	return autoFillCmd(&cmdYoutube{}, args)
 }
 
 func (c *cmdYoutube) RawOutput() []string {
 	return []string{
 		`<div class="maya-youtube">`,
-		fmt.Sprintf(`<iframe width="%d" height="%d" src="//www.youtube.com/embed/%s" frameborder="0" allowfullscreen></iframe>`, c.width, c.height, c.videoId),
+		fmt.Sprintf(`<iframe width="%d" height="%d" src="//www.youtube.com/embed/%s" frameborder="0" allowfullscreen></iframe>`, c.Width, c.Height, c.VideoId),
 		`</div>`,
 	}
 }

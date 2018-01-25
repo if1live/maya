@@ -1,23 +1,22 @@
 package maya
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type cmdGist struct {
-	id   string
-	file string
+	ID   string `maya:"id"`
+	File string `maya:"file"`
 }
 
 func newCmdGist(action string, args *cmdArgs) cmd {
-	return &cmdGist{
-		id:   args.stringVal("id", ""),
-		file: args.stringVal("file", ""),
-	}
+	return autoFillCmd(&cmdGist{}, args)
 }
 
 func (c *cmdGist) RawOutput() []string {
-	url := fmt.Sprintf("https://gist.github.com/%s.js", c.id)
-	if c.file != "" {
-		url += fmt.Sprintf("?file=%s", c.file)
+	url := fmt.Sprintf("https://gist.github.com/%s.js", c.ID)
+	if c.File != "" {
+		url += fmt.Sprintf("?file=%s", c.File)
 	}
 	return []string{
 		`<div class="maya-gist">`,

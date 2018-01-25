@@ -9,46 +9,40 @@ import (
 )
 
 type cmdView struct {
-	filePath  string
-	startLine int
-	endLine   int
-	language  string
-	format    string
+	FilePath  string `maya:"file"`
+	StartLine int    `maya:"start_line,0"`
+	EndLine   int    `maya:"end_line,0"`
+	Language  string
+	Format    string `maya:"format,code"`
 }
 
 func newCmdView(action string, args *cmdArgs) cmd {
-	filePath := args.stringVal("file", "")
-	defaultLang := strings.Replace(filepath.Ext(filePath), ".", "", -1)
-	language := args.stringVal("lang", defaultLang)
-
-	return &cmdView{
-		filePath:  filePath,
-		startLine: args.intVal("start_line", 0),
-		endLine:   args.intVal("end_line", 0),
-		language:  language,
-		format:    args.stringVal("format", formatCode),
-	}
+	c := &cmdView{}
+	autoFillCmd(c, args)
+	defaultLang := strings.Replace(filepath.Ext(c.FilePath), ".", "", -1)
+	c.Language = args.stringVal("lang", defaultLang)
+	return c
 }
 
 func (c *cmdView) RawOutput() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command ViewFile: %v", c)
-	data, err := ioutil.ReadFile(c.filePath)
+	data, err := ioutil.ReadFile(c.FilePath)
 	if err != nil {
 		panic(err)
 	}
 	lines := strings.Split(string(data[:]), "\n")
 
-	if c.startLine == 0 && c.endLine == 0 {
-		c.endLine = len(lines)
+	if c.StartLine == 0 && c.EndLine == 0 {
+		c.EndLine = len(lines)
 	}
 
-	elems := lines[c.startLine:c.endLine]
+	elems := lines[c.StartLine:c.EndLine]
 	elems = sanitizeLineFeedMultiLine(elems)
 	return elems
 }
 
 func (c *cmdView) execute() string {
-	f := newFormatter(c.format)
-	return f.format(c.RawOutput(), c.language)
+	f := newFormatter(c.Format)
+	return f.format(c.RawOutput(), c.Language)
 }
