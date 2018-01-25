@@ -7,7 +7,7 @@ import (
 )
 
 type cmd interface {
-	RawOutput() []string
+	output() []string
 	execute() string
 }
 
@@ -58,46 +58,64 @@ func (args *cmdArgs) boolVal(key string, defaultVal bool) bool {
 }
 
 func newCmd(action string, args *cmdArgs) cmd {
-	type CreateFunc func(string, *cmdArgs) cmd
+	type CreateFunc func(*cmdArgs) cmd
 
 	table := map[string]CreateFunc{
 		"view":    newCmdView,
 		"execute": newCmdExecute,
-		"youtube": newCommandYoutube,
+		"youtube": newCmdYoutube,
 		"gist":    newCmdGist,
 	}
 	if fn, ok := table[action]; ok {
-		return fn(action, args)
+		return fn(args)
 	}
 	return newCmdUnknown(action, args)
 }
 
-func autoFillCmd(c cmd, args *cmdArgs) cmd {
+func fillCmd(c cmd, args *cmdArgs) cmd {
 	t := reflect.TypeOf(c).Elem()
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tag := field.Tag.Get("maya")
 		tokens := strings.Split(tag, ",")
 
-		key := tokens[0]
+		keyIdx := 0
+		defaultValIdx := 1
+
+		key := tokens[keyIdx]
+
 		switch field.Type {
 		case reflect.TypeOf(""):
-			defaultValue := ""
-			if len(tokens) >= 2 {
-				defaultValue = tokens[1]
+			defaultVal := ""
+			if len(tokens) >= defaultValIdx+1 {
+				defaultVal = tokens[defaultValIdx]
 			}
 
-			v := args.stringVal(key, defaultValue)
+			v := args.stringVal(key, defaultVal)
 			reflect.ValueOf(c).Elem().Field(i).SetString(v)
 			break
 
 		case reflect.TypeOf(1):
-			defaultValue := 0
-			if len(tokens) >= 2 {
-				defaultValue, _ = strconv.Atoi(tokens[1])
+			defaultVal := 0
+			if len(tokens) >= defaultValIdx+1 {
+				defaultVal, _ = strconv.Atoi(tokens[defaultValIdx])
 			}
-			v := args.intVal(key, defaultValue)
+			v := args.intVal(key, defaultVal)
 			reflect.ValueOf(c).Elem().Field(i).SetInt(int64(v))
+			break
+
+		case reflect.TypeOf(true):
+			defaultVal := false
+			if len(tokens) >= defaultValIdx+1 {
+				v := tokens[defaultValIdx]
+				if v == "true" {
+					defaultVal = true
+				} else if v == "false" {
+					defaultVal = false
+				}
+			}
+			v := args.boolVal(key, defaultVal)
+			reflect.ValueOf(c).Elem().Field(i).SetBool(v)
 			break
 		}
 	}

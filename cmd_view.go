@@ -16,15 +16,15 @@ type cmdView struct {
 	Format    string `maya:"format,code"`
 }
 
-func newCmdView(action string, args *cmdArgs) cmd {
+func newCmdView(args *cmdArgs) cmd {
 	c := &cmdView{}
-	autoFillCmd(c, args)
+	fillCmd(c, args)
 	defaultLang := strings.Replace(filepath.Ext(c.FilePath), ".", "", -1)
 	c.Language = args.stringVal("lang", defaultLang)
 	return c
 }
 
-func (c *cmdView) RawOutput() []string {
+func (c *cmdView) output() []string {
 	log := logging.MustGetLogger("maya")
 	log.Infof("Command ViewFile: %v", c)
 	data, err := ioutil.ReadFile(c.FilePath)
@@ -44,5 +44,5 @@ func (c *cmdView) RawOutput() []string {
 
 func (c *cmdView) execute() string {
 	f := newFormatter(c.Format)
-	return f.format(c.RawOutput(), c.Language)
+	return f.format(c.output(), c.Language)
 }

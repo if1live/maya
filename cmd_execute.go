@@ -14,21 +14,17 @@ import (
 )
 
 type cmdExecute struct {
-	cmd       string
-	attachCmd bool
-	format    string
+	Cmd       string `maya:"cmd,echo empty"`
+	AttachCmd bool   `maya:"attach_cmd,false"`
+	Format    string `maya:"format,code"`
 }
 
-func newCmdExecute(action string, args *cmdArgs) cmd {
-	return &cmdExecute{
-		cmd:       args.stringVal("cmd", "echo empty"),
-		attachCmd: args.boolVal("attach_cmd", false),
-		format:    args.stringVal("format", formatCode),
-	}
+func newCmdExecute(args *cmdArgs) cmd {
+	return fillCmd(&cmdExecute{}, args)
 }
 
 func (c *cmdExecute) cacheFileName() string {
-	data := []byte(c.cmd)
+	data := []byte(c.Cmd)
 	return fmt.Sprintf("%x.txt", md5.Sum(data))
 }
 
@@ -67,7 +63,7 @@ func (c *cmdExecute) readCache() []string {
 
 func (c *cmdExecute) writeCache(lines []string) bool {
 	cacheLines := []string{
-		"# " + c.cmd,
+		"# " + c.Cmd,
 	}
 	cacheLines = append(cacheLines, lines...)
 	data := []byte(strings.Join(cacheLines, "\n"))
@@ -75,7 +71,7 @@ func (c *cmdExecute) writeCache(lines []string) bool {
 	return true
 }
 
-func (c *cmdExecute) RawOutput() []string {
+func (c *cmdExecute) output() []string {
 	outputLines := []string{}
 	if c.cacheExists() {
 		outputLines = c.readCache()
@@ -85,8 +81,8 @@ func (c *cmdExecute) RawOutput() []string {
 	}
 
 	elems := []string{}
-	if c.attachCmd {
-		elems = append(elems, "$ "+c.cmd)
+	if c.AttachCmd {
+		elems = append(elems, "$ "+c.Cmd)
 	}
 	elems = append(elems, outputLines...)
 	elems = sanitizeLineFeedMultiLine(elems)
@@ -100,7 +96,7 @@ func (c *cmdExecute) executeImmediatelyUnix() []string {
 	}
 	defer os.Remove(tmpfile.Name())
 
-	if _, err := tmpfile.Write([]byte(c.cmd)); err != nil {
+	if _, err := tmpfile.Write([]byte(c.Cmd)); err != nil {
 		panic(err)
 	}
 	if err := tmpfile.Close(); err != nil {
@@ -123,7 +119,7 @@ func (c *cmdExecute) executeImmediatelyUnix() []string {
 
 func (c *cmdExecute) executeImmediatelyWindows() []string {
 	// https://groups.google.com/forum/#!topic/golang-nuts/Qtaw8r3Sx68
-	out, err := exec.Command("cmd", "/c", c.cmd).CombinedOutput()
+	out, err := exec.Command("cmd", "/c", c.Cmd).CombinedOutput()
 	elems := []string{}
 	if err != nil {
 		if _, ok := err.(*exec.Error); ok {
@@ -149,6 +145,6 @@ func (c *cmdExecute) ExecuteImmediately() []string {
 }
 
 func (c *cmdExecute) execute() string {
-	f := newFormatter(c.format)
-	return f.format(c.RawOutput(), "bash")
+	f := newFormatter(c.Format)
+	return f.format(c.output(), "bash")
 }

@@ -8,11 +8,11 @@ type cmdYoutube struct {
 	Height  int    `maya:"height,480"`
 }
 
-func newCommandYoutube(action string, args *cmdArgs) cmd {
-	return autoFillCmd(&cmdYoutube{}, args)
+func newCmdYoutube(args *cmdArgs) cmd {
+	return fillCmd(&cmdYoutube{}, args)
 }
 
-func (c *cmdYoutube) RawOutput() []string {
+func (c *cmdYoutube) output() []string {
 	return []string{
 		`<div class="maya-youtube">`,
 		fmt.Sprintf(`<iframe width="%d" height="%d" src="//www.youtube.com/embed/%s" frameborder="0" allowfullscreen></iframe>`, c.Width, c.Height, c.VideoId),
@@ -22,5 +22,5 @@ func (c *cmdYoutube) RawOutput() []string {
 
 func (c *cmdYoutube) execute() string {
 	f := newFormatter(formatText)
-	return f.format(c.RawOutput())
+	return f.format(c.output())
 }

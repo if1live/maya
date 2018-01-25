@@ -108,10 +108,10 @@ func TestRawOutpoutCommandExecute(t *testing.T) {
 		switch runtime.GOOS {
 		case "windows":
 			if c.supportWindows {
-				assert.Equal(t, c.output, c.cmd.RawOutput())
+				assert.Equal(t, c.output, c.cmd.output())
 			}
 		default:
-			assert.Equal(t, c.output, c.cmd.RawOutput())
+			assert.Equal(t, c.output, c.cmd.output())
 		}
 	}
 }
@@ -132,7 +132,7 @@ func TestRawOutputCommandView(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.RawOutput())
+		assert.Equal(t, c.output, c.cmd.output())
 	}
 }
 
@@ -147,7 +147,7 @@ func TestRawOutputCommandUnknown(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.output, c.cmd.RawOutput())
+		assert.Equal(t, c.output, c.cmd.output())
 	}
 }
 
@@ -157,7 +157,7 @@ func Test_cmdGist(t *testing.T) {
 		expected cmd
 	}{
 		{
-			newCmdGist("gist", &cmdArgs{map[string]string{
+			newCmdGist(&cmdArgs{map[string]string{
 				"id":   "3254906",
 				"file": "brew-update-notifier.sh",
 			}}),
@@ -177,7 +177,7 @@ func Test_cmdYoutube(t *testing.T) {
 		expected cmd
 	}{
 		{
-			newCmd("youtube", &cmdArgs{map[string]string{
+			newCmdYoutube(&cmdArgs{map[string]string{
 				"video_id": "id",
 				"width":    "480",
 				"height":   "320",
@@ -198,11 +198,11 @@ func Test_cmdView(t *testing.T) {
 		expected cmd
 	}{
 		{
-			newCmd("view", &cmdArgs{map[string]string{"file": "hello.txt"}}),
+			newCmdView(&cmdArgs{map[string]string{"file": "hello.txt"}}),
 			&cmdView{"hello.txt", 0, 0, "txt", formatCode},
 		},
 		{
-			newCmd("view", &cmdArgs{map[string]string{
+			newCmdView(&cmdArgs{map[string]string{
 				"file":       "foo.txt",
 				"start_line": "1",
 				"end_line":   "10",
@@ -211,7 +211,7 @@ func Test_cmdView(t *testing.T) {
 			&cmdView{"foo.txt", 1, 10, "txt", formatBlockquote},
 		},
 		{
-			newCmd("view", &cmdArgs{map[string]string{
+			newCmdView(&cmdArgs{map[string]string{
 				"file": "hello.txt",
 				"lang": "lisp",
 			}}),
@@ -231,20 +231,20 @@ func Test_cmdExecute(t *testing.T) {
 		expected cmd
 	}{
 		{
-			newCmd("execute", &cmdArgs{map[string]string{
+			newCmdExecute(&cmdArgs{map[string]string{
 				"cmd": "echo hello",
 			}}),
 			&cmdExecute{"echo hello", false, formatCode},
 		},
 		{
-			newCmd("execute", &cmdArgs{map[string]string{
+			newCmdExecute(&cmdArgs{map[string]string{
 				"cmd":    "echo hello",
 				"format": "blockquote",
 			}}),
 			&cmdExecute{"echo hello", false, formatBlockquote},
 		},
 		{
-			newCmd("execute", &cmdArgs{map[string]string{
+			newCmdExecute(&cmdArgs{map[string]string{
 				"cmd":        "echo hello",
 				"format":     "blockquote",
 				"attach_cmd": "t",

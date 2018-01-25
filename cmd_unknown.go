@@ -12,7 +12,7 @@ func newCmdUnknown(action string, args *cmdArgs) cmd {
 	}
 }
 
-func (c *cmdUnknown) RawOutput() []string {
+func (c *cmdUnknown) output() []string {
 	log := logging.MustGetLogger("maya")
 	log.Warningf("Command Unknown: %v", c)
 	tokens := []string{
@@ -23,5 +23,5 @@ func (c *cmdUnknown) RawOutput() []string {
 
 func (c *cmdUnknown) execute() string {
 	f := newFormatter(formatBlockquote)
-	return f.format(c.RawOutput())
+	return f.format(c.output())
 }

@@ -9,11 +9,11 @@ type cmdGist struct {
 	File string `maya:"file"`
 }
 
-func newCmdGist(action string, args *cmdArgs) cmd {
-	return autoFillCmd(&cmdGist{}, args)
+func newCmdGist(args *cmdArgs) cmd {
+	return fillCmd(&cmdGist{}, args)
 }
 
-func (c *cmdGist) RawOutput() []string {
+func (c *cmdGist) output() []string {
 	url := fmt.Sprintf("https://gist.github.com/%s.js", c.ID)
 	if c.File != "" {
 		url += fmt.Sprintf("?file=%s", c.File)
@@ -27,5 +27,5 @@ func (c *cmdGist) RawOutput() []string {
 
 func (c *cmdGist) execute() string {
 	f := newFormatter(formatText)
-	return f.format(c.RawOutput())
+	return f.format(c.output())
 }
