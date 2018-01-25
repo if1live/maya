@@ -59,7 +59,6 @@ func (args *cmdArgs) boolVal(key string, defaultVal bool) bool {
 
 func newCmd(action string, args *cmdArgs) cmd {
 	type CreateFunc func(*cmdArgs) cmd
-
 	table := map[string]CreateFunc{
 		"view":    newCmdView,
 		"execute": newCmdExecute,

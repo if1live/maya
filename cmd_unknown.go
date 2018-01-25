@@ -4,11 +4,13 @@ import "github.com/op/go-logging"
 
 type cmdUnknown struct {
 	Action string
+	Args   *cmdArgs
 }
 
 func newCmdUnknown(action string, args *cmdArgs) cmd {
 	return &cmdUnknown{
 		Action: action,
+		Args:   args,
 	}
 }
 

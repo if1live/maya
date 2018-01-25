@@ -142,7 +142,7 @@ func TestRawOutputCommandUnknown(t *testing.T) {
 		output []string
 	}{
 		{
-			cmdUnknown{"foo"},
+			cmdUnknown{"foo", &cmdArgs{map[string]string{}}},
 			[]string{"Action=foo"},
 		},
 	}
@@ -258,21 +258,4 @@ func Test_cmdExecute(t *testing.T) {
 		}
 	}
 
-}
-
-func TestNewCommand(t *testing.T) {
-	cases := []struct {
-		actual   cmd
-		expected cmd
-	}{
-		{
-			newCmd("hello", &cmdArgs{map[string]string{"key": "value"}}),
-			&cmdUnknown{"hello"},
-		},
-	}
-	for _, c := range cases {
-		if !reflect.DeepEqual(c.actual, c.expected) {
-			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
-		}
-	}
 }
