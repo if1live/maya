@@ -16,9 +16,9 @@ func TestNewArticle(t *testing.T) {
 		// basic
 		{
 			strings.Join([]string{
-				"+++",
+				"---",
 				"title: hello",
-				"+++",
+				"---",
 				"this is content",
 			}, "\n"),
 			"title: hello",
@@ -27,9 +27,9 @@ func TestNewArticle(t *testing.T) {
 		// metadata
 		{
 			strings.Join([]string{
-				"+++",
+				"---",
 				"title: hello",
-				"+++",
+				"---",
 				"",
 			}, "\n"),
 			"title: hello",
@@ -45,8 +45,8 @@ func TestNewArticle(t *testing.T) {
 		},
 		{
 			strings.Join([]string{
-				"+++",
-				"+++",
+				"---",
+				"---",
 				"this is content",
 			}, "\n"),
 			"",

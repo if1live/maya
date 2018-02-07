@@ -40,13 +40,13 @@ func NewArticle(text string, mode string) *Article {
 		LineParseStateContent  = 2
 	)
 
-	// 파싱을 간단하게 처리하려고 hugo 방식을 채택
-	// +++
+	// github는 --- ~ --- 구역을 yaml로 파싱한다
+	// ---
 	// metadatas
-	// +++
+	// ---
 	// content
 
-	if lines[0] != "+++" {
+	if lines[0] != "---" {
 		// no metadata
 		return &Article{
 			MetadataText: "",
@@ -60,14 +60,14 @@ func NewArticle(text string, mode string) *Article {
 	for _, line := range lines {
 		switch state {
 		case LineParseStateInit:
-			if strings.Trim(line, " ") == "+++" {
+			if strings.Trim(line, " ") == "---" {
 				state = LineParseStateMetadata
 				metadataLines = []string{}
 			} else {
 				contentLines = append(contentLines, line)
 			}
 		case LineParseStateMetadata:
-			if strings.Trim(line, " ") == "+++" {
+			if strings.Trim(line, " ") == "---" {
 				state = LineParseStateContent
 				contentLines = []string{}
 			} else {
