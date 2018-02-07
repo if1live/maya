@@ -160,3 +160,28 @@ spam: dummy
 		t.Errorf("data: %s, expected %q, got %q", data, expected, actual)
 	}
 }
+
+func Test_Dict_GetValueType(t *testing.T) {
+	cases := []struct {
+		data     string
+		expected valueType
+	}{
+		{"key: foo", valueTypeStr},
+		{"key: 123", valueTypeInt},
+		{"key: [foo, bar]", valueTypeStrList},
+		{"key: [1, 2]", valueTypeIntList},
+	}
+	for _, c := range cases {
+		m := make(map[interface{}]interface{})
+		err := yaml.Unmarshal([]byte(c.data), &m)
+		if err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		dict := NewDict(m)
+		actual := dict.GetValueType("key")
+		if c.expected != actual {
+			t.Errorf("data: %s, expected %q, got %q", c.data, c.expected, actual)
+		}
+	}
+}

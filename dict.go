@@ -10,12 +10,46 @@ import (
 	"fmt"
 )
 
+type valueType int
+
+const (
+	valueTypeUnknown valueType = 0
+	valueTypeStr
+	valueTypeInt
+	valueTypeStrList
+	valueTypeIntList
+)
+
 type Dict struct {
 	m map[interface{}]interface{}
 }
 
 func NewDict(m map[interface{}]interface{}) *Dict {
 	return &Dict{m}
+}
+
+func (d *Dict) GetValueType(key string) valueType {
+	_, err := d.GetStr(key)
+	if err != nil {
+		return valueTypeStr
+	}
+
+	_, err = d.GetInt(key)
+	if err != nil {
+		return valueTypeInt
+	}
+
+	_, err = d.GetStrList(key)
+	if err != nil {
+		return valueTypeStrList
+	}
+
+	_, err = d.GetIntList(key)
+	if err != nil {
+		return valueTypeIntList
+	}
+
+	return valueTypeUnknown
 }
 
 // 대부분의 요소는 string-string이라서 접근하기 쉽도록
