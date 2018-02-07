@@ -38,3 +38,5 @@ maya-cli/maya-cli.exe
 
 # cache
 cache
+
+vendor/
