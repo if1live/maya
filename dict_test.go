@@ -142,3 +142,21 @@ func Test_Dict_GetIntList(t *testing.T) {
 		}
 	}
 }
+
+func Test_Dict_GetStrKeys(t *testing.T) {
+	data := `
+foo: bar
+spam: dummy
+`
+	expected := []string{"foo", "spam"}
+	m := make(map[interface{}]interface{})
+	err := yaml.Unmarshal([]byte(data), &m)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	dict := NewDict(m)
+	actual := dict.GetStrKeys()
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("data: %s, expected %q, got %q", data, expected, actual)
+	}
+}

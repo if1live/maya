@@ -86,3 +86,13 @@ func (d *Dict) GetIntList(key string) ([]int, error) {
 	}
 	return val, nil
 }
+
+func (d *Dict) GetStrKeys() []string {
+	keys := []string{}
+	for k, _ := range d.m {
+		if key, ok := k.(string); ok {
+			keys = append(keys, key)
+		}
+	}
+	return keys
+}
