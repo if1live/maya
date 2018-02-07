@@ -1,8 +1,10 @@
+---
 title: this is title
 subtitle: this is subtitle
-tags: python, demo
+tags: [python, demo]
 author: if1live
 slug: sample-article
+---
 
 ## write article
 

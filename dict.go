@@ -6,46 +6,47 @@ https://github.com/blog/1647-viewing-yaml-metadata-in-your-documents
 */
 
 import (
-	"errors"
 	"fmt"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type valueType int
 
 const (
 	valueTypeUnknown valueType = 0
-	valueTypeStr
-	valueTypeInt
-	valueTypeStrList
-	valueTypeIntList
+	valueTypeStr               = 1
+	valueTypeInt               = 2
+	valueTypeStrList           = 3
+	valueTypeIntList           = 4
 )
 
 type Dict struct {
-	m map[interface{}]interface{}
+	m yaml.MapSlice
 }
 
-func NewDict(m map[interface{}]interface{}) *Dict {
+func NewDict(m yaml.MapSlice) *Dict {
 	return &Dict{m}
 }
 
 func (d *Dict) GetValueType(key string) valueType {
 	_, err := d.GetStr(key)
-	if err != nil {
+	if err == nil {
 		return valueTypeStr
 	}
 
 	_, err = d.GetInt(key)
-	if err != nil {
+	if err == nil {
 		return valueTypeInt
 	}
 
 	_, err = d.GetStrList(key)
-	if err != nil {
+	if err == nil {
 		return valueTypeStrList
 	}
 
 	_, err = d.GetIntList(key)
-	if err != nil {
+	if err == nil {
 		return valueTypeIntList
 	}
 
@@ -53,11 +54,23 @@ func (d *Dict) GetValueType(key string) valueType {
 }
 
 // 대부분의 요소는 string-string이라서 접근하기 쉽도록
-func (d *Dict) GetStr(key string) (string, error) {
-	raw, ok := d.m[key]
-	if !ok {
-		return "", errors.New("not found")
+func (d *Dict) getRootValue(key string) (interface{}, error) {
+	for _, item := range d.m {
+		if k, ok := item.Key.(string); ok {
+			if k == key {
+				return item.Value, nil
+			}
+		}
 	}
+	return nil, fmt.Errorf("not found: %s", key)
+}
+
+func (d *Dict) GetStr(key string) (string, error) {
+	raw, err := d.getRootValue(key)
+	if err != nil {
+		return "", err
+	}
+
 	val, ok := raw.(string)
 	if !ok {
 		return "", fmt.Errorf("invalid type: %v", raw)
@@ -66,9 +79,9 @@ func (d *Dict) GetStr(key string) (string, error) {
 }
 
 func (d *Dict) GetInt(key string) (int, error) {
-	raw, ok := d.m[key]
-	if !ok {
-		return 0, errors.New("not found")
+	raw, err := d.getRootValue(key)
+	if err != nil {
+		return 0, err
 	}
 	val, ok := raw.(int)
 	if !ok {
@@ -78,9 +91,9 @@ func (d *Dict) GetInt(key string) (int, error) {
 }
 
 func (d *Dict) GetStrList(key string) ([]string, error) {
-	raw, ok := d.m[key]
-	if !ok {
-		return nil, errors.New("not found")
+	raw, err := d.getRootValue(key)
+	if err != nil {
+		return nil, err
 	}
 	list, ok := raw.([]interface{})
 	if !ok {
@@ -100,9 +113,9 @@ func (d *Dict) GetStrList(key string) ([]string, error) {
 }
 
 func (d *Dict) GetIntList(key string) ([]int, error) {
-	raw, ok := d.m[key]
-	if !ok {
-		return nil, errors.New("not found")
+	raw, err := d.getRootValue(key)
+	if err != nil {
+		return nil, err
 	}
 	list, ok := raw.([]interface{})
 	if !ok {
@@ -123,7 +136,8 @@ func (d *Dict) GetIntList(key string) ([]int, error) {
 
 func (d *Dict) GetStrKeys() []string {
 	keys := []string{}
-	for k, _ := range d.m {
+	for _, item := range d.m {
+		k := item.Key
 		if key, ok := k.(string); ok {
 			keys = append(keys, key)
 		}

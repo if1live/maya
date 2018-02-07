@@ -19,7 +19,7 @@ func Test_Dict_GetStr(t *testing.T) {
 		{"key: [foo, bar]", "", false},
 	}
 	for _, c := range cases {
-		m := make(map[interface{}]interface{})
+		m := yaml.MapSlice{}
 		err := yaml.Unmarshal([]byte(c.data), &m)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -52,7 +52,7 @@ func Test_Dict_GetInt(t *testing.T) {
 		{"key: foo", 0, false},
 	}
 	for _, c := range cases {
-		m := make(map[interface{}]interface{})
+		m := yaml.MapSlice{}
 		err := yaml.Unmarshal([]byte(c.data), &m)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -86,7 +86,8 @@ func Test_Dict_GetStrList(t *testing.T) {
 		{"key: foo, bar", nil, false},
 	}
 	for _, c := range cases {
-		m := make(map[interface{}]interface{})
+		m := yaml.MapSlice{}
+
 		err := yaml.Unmarshal([]byte(c.data), &m)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -120,7 +121,7 @@ func Test_Dict_GetIntList(t *testing.T) {
 		{"key: foo, bar", nil, false},
 	}
 	for _, c := range cases {
-		m := make(map[interface{}]interface{})
+		m := yaml.MapSlice{}
 		err := yaml.Unmarshal([]byte(c.data), &m)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -149,7 +150,7 @@ foo: bar
 spam: dummy
 `
 	expected := []string{"foo", "spam"}
-	m := make(map[interface{}]interface{})
+	m := yaml.MapSlice{}
 	err := yaml.Unmarshal([]byte(data), &m)
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -172,7 +173,7 @@ func Test_Dict_GetValueType(t *testing.T) {
 		{"key: [1, 2]", valueTypeIntList},
 	}
 	for _, c := range cases {
-		m := make(map[interface{}]interface{})
+		m := yaml.MapSlice{}
 		err := yaml.Unmarshal([]byte(c.data), &m)
 		if err != nil {
 			t.Fatalf("error: %v", err)
@@ -181,7 +182,7 @@ func Test_Dict_GetValueType(t *testing.T) {
 		dict := NewDict(m)
 		actual := dict.GetValueType("key")
 		if c.expected != actual {
-			t.Errorf("data: %s, expected %q, got %q", c.data, c.expected, actual)
+			t.Errorf("data: %s, expected %v, got %v", c.data, c.expected, actual)
 		}
 	}
 }

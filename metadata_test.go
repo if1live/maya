@@ -7,72 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIsListValue(t *testing.T) {
-	cases := []struct {
-		value    string
-		expected bool
-	}{
-		{"[a, b, c]", true},
-		{"a,b,c", false},
-		{"[]", true},
-	}
-	for _, c := range cases {
-		kv := MetadataKeyValue{"key", c.value}
-		assert.Equal(t, c.expected, kv.IsListValue(), c.value)
-	}
-}
-
-func TestListValue(t *testing.T) {
-	cases := []struct {
-		value    string
-		expected []string
-	}{
-		{"[this is title]", []string{"this is title"}},
-		{"[1, 2, 3]", []string{"1", "2", "3"}},
-		{"[1,2,1]", []string{"1", "2"}},
-	}
-	for _, c := range cases {
-		kv := MetadataKeyValue{"key", c.value}
-		assert.Equal(t, c.expected, kv.ListValue())
-	}
-}
-
-func TestGet(t *testing.T) {
-	cases := []struct {
-		line string
-		key  string
-		val  string
-	}{
-		{"title: foo", "title", "foo"},
-		{"Subtitle : bar", "subtitle", "bar"},
-		{"SLUG   :   spam", "slug", "spam"},
-		{"title : this is title", "title", "this is title"},
-		{"title : foo : bar : spam", "title", "foo : bar : spam"},
-		{"title :  strip   ", "title", "strip"},
-		{"title : xxx", "", ""},
-		{"title : xxx", "not-exist", ""},
-	}
-	for _, c := range cases {
-		m := NewMetadata(c.line)
-		assert.Equal(t, c.val, m.Get(c.key))
-	}
-}
-
-func TestGetList(t *testing.T) {
-	cases := []struct {
-		line string
-		key  string
-		val  []string
-	}{
-		{"tags: [1,2,3]", "tags", []string{"1", "2", "3"}},
-		{"tags: [1, 2, 3]", "not-exist", []string{}},
-	}
-	for _, c := range cases {
-		m := NewMetadata(c.line)
-		assert.Equal(t, c.val, m.GetList(c.key))
-	}
-}
-
 func TestExecute(t *testing.T) {
 	metadataText := `
 title: "제목"
@@ -92,7 +26,7 @@ status: draft
 		{
 			loader.Execute(metadata, ModePelican),
 			strings.Trim(`
-Title: "제목"
+Title: 제목
 Subtitle: subtitle-1
 Date: 2016-02-20
 Tags: foo, bar
@@ -104,7 +38,7 @@ Status: draft
 			loader.Execute(metadata, ModeHugo),
 			strings.Trim(`
 +++
-title = "\"제목\""
+title = "제목"
 subtitle = "subtitle-1"
 date = "2016-02-20T00:00:00+00:00"
 tags = ["foo", "bar"]

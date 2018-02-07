@@ -6,12 +6,14 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"unicode/utf8"
 
 	"github.com/kardianos/osext"
 	"github.com/op/go-logging"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -21,36 +23,23 @@ const (
 )
 
 type MetadataKeyValue struct {
-	Key   string
-	Value string
+	Key string
+
+	isList    bool
+	singleVal string
+	multiVal  []string
 }
 
 func (kv *MetadataKeyValue) IsListValue() bool {
-	re := regexp.MustCompile(`^\[.*\]$`)
-	return re.FindString(kv.Value) != ""
+	return kv.isList
+}
+
+func (kv *MetadataKeyValue) Value() string {
+	return kv.singleVal
 }
 
 func (kv *MetadataKeyValue) ListValue() []string {
-	re := regexp.MustCompile(`^\[(.*)\]$`)
-	m := re.FindStringSubmatch(kv.Value)
-	if len(m) == 0 {
-		return []string{}
-	}
-
-	vals := strings.Split(m[1], ",")
-	for i, val := range vals {
-		vals[i] = strings.Trim(val, " ")
-	}
-
-	keys := map[string]bool{}
-	result := vals[:0]
-	for _, val := range vals {
-		if len(val) > 0 && keys[val] == false {
-			keys[val] = true
-			result = append(result, val)
-		}
-	}
-	return result
+	return kv.multiVal
 }
 
 type ArticleMetadata struct {
@@ -63,44 +52,54 @@ type MetadataTemplateLoader struct {
 }
 
 func NewMetadata(text string) *ArticleMetadata {
+	m := yaml.MapSlice{}
+	err := yaml.Unmarshal([]byte(text), &m)
+	if err != nil {
+		panic(err)
+	}
+	dict := NewDict(m)
+	keys := dict.GetStrKeys()
+
 	table := []MetadataKeyValue{}
-
-	lines := strings.Split(text, "\n")
-	re := regexp.MustCompile(`(\w+)\s*:(.*)`)
-	for _, line := range lines {
-		m := re.FindStringSubmatch(line)
-		if m == nil {
-			continue
+	for _, key := range keys {
+		pair := MetadataKeyValue{
+			Key: key,
 		}
-		key, value := m[1], m[2]
-		value = strings.Trim(value, " ")
-		key = strings.ToLower(key)
+		switch dict.GetValueType(key) {
+		case valueTypeStr:
+			pair.isList = false
+			val, _ := dict.GetStr(key)
+			pair.singleVal = val
+			break
 
-		t := MetadataKeyValue{key, value}
-		table = append(table, t)
+		case valueTypeInt:
+			pair.isList = false
+			tmp, _ := dict.GetInt(key)
+			str := strconv.Itoa(tmp)
+			pair.singleVal = str
+			break
+
+		case valueTypeStrList:
+			pair.isList = true
+			val, _ := dict.GetStrList(key)
+			pair.multiVal = val
+			break
+
+		case valueTypeIntList:
+			pair.isList = true
+			tmp, _ := dict.GetIntList(key)
+			val := make([]string, len(tmp))
+			for i, num := range tmp {
+				val[i] = strconv.Itoa(num)
+			}
+			pair.multiVal = val
+		}
+		table = append(table, pair)
 	}
 
 	return &ArticleMetadata{
 		Table: table,
 	}
-}
-
-func (m *ArticleMetadata) Get(key string) string {
-	for _, t := range m.Table {
-		if t.Key == key {
-			return t.Value
-		}
-	}
-	return ""
-}
-
-func (m *ArticleMetadata) GetList(key string) []string {
-	for _, t := range m.Table {
-		if t.Key == key {
-			return t.ListValue()
-		}
-	}
-	return []string{}
 }
 
 func (m *ArticleMetadata) Preprocess(mode string) {
@@ -121,7 +120,7 @@ func preprocessHugo(m *ArticleMetadata) {
 
 	for i, t := range m.Table {
 		if fn, ok := funcs[t.Key]; ok {
-			t.Value = fn(t.Value)
+			t.singleVal = fn(t.singleVal)
 			m.Table[i] = t
 		}
 	}
