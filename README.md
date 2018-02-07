@@ -113,11 +113,13 @@ maya-cli -mode=pelican -file=demo.md
 **demo.md**
 
 ```md
+---
 title: this is title
 subtitle: this is subtitle
-tags: python, demo
+tags: [python, demo]
 author: if1live
 slug: sample-article
+---
 
 ## write article
 
@@ -168,11 +170,12 @@ maya-cli -mode=pelican -file=demo.md
 
 -----
 
-title: this is title
-subtitle: this is subtitle
-tags: python, demo
-author: if1live
-slug: sample-article
+Title: this is title
+Subtitle: this is subtitle
+Tags: python, demo
+Author: if1live
+Slug: sample-article
+
 
 ## write article
 
