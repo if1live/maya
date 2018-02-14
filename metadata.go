@@ -159,6 +159,7 @@ func NewTemplateLoader() MetadataTemplateLoader {
 			".",
 			executableDir,
 			filepath.Join(os.Getenv("GOPATH"), "src", packageName),
+			filepath.Join(os.Getenv("HOME"), "go", "src", packageName),
 		}
 
 		found := false
