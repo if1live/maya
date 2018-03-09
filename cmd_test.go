@@ -166,7 +166,7 @@ func Test_cmdGist(t *testing.T) {
 	}
 	for _, c := range cases {
 		if !reflect.DeepEqual(c.actual, c.expected) {
-			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+			t.Errorf("CreateCommand - expected %#v, got %#v", c.expected, c.actual)
 		}
 	}
 }
@@ -187,7 +187,7 @@ func Test_cmdYoutube(t *testing.T) {
 	}
 	for _, c := range cases {
 		if !reflect.DeepEqual(c.actual, c.expected) {
-			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+			t.Errorf("CreateCommand - expected %#v, got %#v", c.expected, c.actual)
 		}
 	}
 }
@@ -220,7 +220,7 @@ func Test_cmdView(t *testing.T) {
 	}
 	for _, c := range cases {
 		if !reflect.DeepEqual(c.actual, c.expected) {
-			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+			t.Errorf("CreateCommand - expected %#v, got %#v", c.expected, c.actual)
 		}
 	}
 }
@@ -254,7 +254,7 @@ func Test_cmdExecute(t *testing.T) {
 	}
 	for _, c := range cases {
 		if !reflect.DeepEqual(c.actual, c.expected) {
-			t.Errorf("CreateCommand - expected %Q, got %Q", c.expected, c.actual)
+			t.Errorf("CreateCommand - expected %#v, got %#v", c.expected, c.actual)
 		}
 	}
 

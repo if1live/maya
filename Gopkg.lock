@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/if1live/maya"
+  packages = ["."]
+  revision = "3291afbf8c1e3345feb9c603cb4ff9695b853f15"
+
+[[projects]]
+  branch = "master"
   name = "github.com/kardianos/osext"
   packages = ["."]
   revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
@@ -40,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6074fe1ee96beb82b2e6a9edee1dd2200be48fa8975db3b958a1029563c233fb"
+  inputs-digest = "0f87fedec770783ad94043f38778f949690a0fd5df0a2dcee8e0c502711c3393"
   solver-name = "gps-cdcl"
   solver-version = 1
