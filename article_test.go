@@ -27,6 +27,7 @@ func TestNewArticle(t *testing.T) {
 		// metadata
 		{
 			strings.Join([]string{
+                "",
 				"---",
 				"title: hello",
 				"---",

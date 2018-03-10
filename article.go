@@ -46,7 +46,15 @@ func NewArticle(text string, mode string) *Article {
 	// ---
 	// content
 
-	if lines[0] != "---" {
+	firstLine := 0
+	for i, line := range lines {
+		if len(strings.Trim(line, " ")) > 0 {
+			firstLine = i
+			break
+		}
+	}
+
+	if lines[firstLine] != "---" {
 		// no metadata
 		return &Article{
 			MetadataText: "",
@@ -57,7 +65,10 @@ func NewArticle(text string, mode string) *Article {
 	}
 
 	state := LineParseStateInit
-	for _, line := range lines {
+	for i, line := range lines {
+		if i < firstLine {
+			continue
+		}
 		switch state {
 		case LineParseStateInit:
 			if strings.Trim(line, " ") == "---" {
