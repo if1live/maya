@@ -3,15 +3,12 @@ package maya
 import (
 	"bytes"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
 	"unicode/utf8"
 
-	"github.com/kardianos/osext"
 	"github.com/op/go-logging"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -21,6 +18,38 @@ const (
 	ModeHugo    = "hugo"
 	ModeEmpty   = "empty"
 )
+
+const templateHugo = `
++++
+{{range $_,$elem := .Table}}
+{{if $elem.IsListValue}}
+{{$elem.Key}} = ["{{join $elem.ListValue "\", \""}}"]
+{{else}}
+{{$elem.Key}} = "{{escape $elem.Value}}"
+{{end}}
+{{end}}
++++
+`
+
+const templatePelican = `
+{{range $_,$elem := .Table}}
+{{if $elem.IsListValue}}
+{{title $elem.Key}}: {{join $elem.ListValue ", "}}
+{{else}}
+{{title $elem.Key}}: {{$elem.Value}}
+{{end}}
+{{end}}
+`
+
+func getTemplateHugo() string {
+	return strings.TrimLeft(templateHugo, " ")
+}
+func getTemplatePelican() string {
+	return strings.TrimLeft(templatePelican, " ")
+}
+func getTemplateEmpty() string {
+	return ""
+}
 
 type MetadataKeyValue struct {
 	Key string
@@ -143,55 +172,39 @@ func NewTemplateLoader() MetadataTemplateLoader {
 	}
 
 	targets := []struct {
-		mode     string
-		filepath string
+		mode string
+		text string
 	}{
-		{ModePelican, "templates/metadata_pelican.tpl"},
-		{ModeHugo, "templates/metadata_hugo.tpl"},
-		{ModeEmpty, "templates/metadata_empty.tpl"},
+		{ModePelican, getTemplatePelican()},
+		{ModeHugo, getTemplateHugo()},
+		{ModeEmpty, getTemplateEmpty()},
 	}
 
-	const packageName = "github.com/if1live/maya"
-	executableDir, _ := osext.ExecutableFolder()
-
 	for _, target := range targets {
-		candidatePaths := []string{
-			".",
-			executableDir,
-			filepath.Join(os.Getenv("GOPATH"), "src", packageName),
-			filepath.Join(os.Getenv("HOME"), "go", "src", packageName),
-		}
-
-		found := false
-		for _, path := range candidatePaths {
-			candidate := filepath.Join(path, target.filepath)
-			if loader.Register(target.mode, candidate) {
-				found = true
-				break
-			}
-		}
-		if found == false {
-			log := logging.MustGetLogger("maya")
-			log.Fatalf("Metadata Template Load Fail [%s] cannot find any candidate", target.mode)
-		}
+		loader.RegisterTemplate(target.mode, target.text)
 	}
 
 	return loader
 }
 
-func (l *MetadataTemplateLoader) Register(mode, filepath string) bool {
-	funcMap := l.createFuncMap()
+func (l *MetadataTemplateLoader) RegisterFile(mode, filepath string) bool {
 	text, err := l.readFile(filepath)
 	if err != nil {
 		return false
 	}
+	ok := l.RegisterTemplate(mode, text)
+
+	log := logging.MustGetLogger("maya")
+	log.Infof("Metadata Template Load Success [%s] %s", mode, filepath)
+	return ok
+}
+
+func (l *MetadataTemplateLoader) RegisterTemplate(mode, text string) bool {
+	funcMap := l.createFuncMap()
 	l.texts[mode] = text
 	l.templates[mode] = template.Must(
 		template.New(mode).Funcs(funcMap).Parse(l.texts[mode]),
 	)
-
-	log := logging.MustGetLogger("maya")
-	log.Infof("Metadata Template Load Success [%s] %s", mode, filepath)
 	return true
 }
 
